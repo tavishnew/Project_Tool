@@ -4,7 +4,7 @@ import { api } from "../api";
 import type { ProjectDetail, Task, TaskStatus } from "../types";
 import Column from "../components/Column";
 import TaskModal from "../components/TaskModal";
-import Skeleton from "../components/ui/Skeleton";
+import { Skeleton } from "../components/ui/Skeleton";
 import ErrorState from "../components/ui/ErrorState";
 import { useToast } from "../components/ui/Toast";
 

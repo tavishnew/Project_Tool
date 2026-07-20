@@ -4,7 +4,7 @@ import { api } from "../api";
 import type { Project } from "../types";
 import ProjectModal from "../components/ProjectModal";
 import ConfirmPopover from "../components/ui/ConfirmPopover";
-import Skeleton from "../components/ui/Skeleton";
+import { Skeleton } from "../components/ui/Skeleton";
 import ErrorState from "../components/ui/ErrorState";
 import { useToast } from "../components/ui/Toast";
 
