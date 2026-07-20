@@ -1,6 +1,6 @@
 import type { Task, TaskStatus } from "../types";
 import TaskCard from "./TaskCard";
-import Skeleton from "./ui/Skeleton";
+import { Skeleton } from "./ui/Skeleton";
 
 const LABELS: Record<TaskStatus, string> = {
   todo: "To Do",
