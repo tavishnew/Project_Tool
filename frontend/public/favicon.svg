@@ -1,6 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#1E3A5F" />
-  <rect x="7" y="8" width="4" height="16" rx="2" fill="#3DDC97" />
-  <rect x="14" y="8" width="4" height="11" rx="2" fill="#EAF0F6" />
-  <rect x="21" y="8" width="4" height="6" rx="2" fill="#6B7A8F" />
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="orbitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A5F"/>
+      <stop offset="50%" stop-color="#3DDC97"/>
+      <stop offset="100%" stop-color="#1E3A5F"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Outer orbital ring -->
+  <circle cx="16" cy="16" r="13" stroke="url(#orbitGradient)" stroke-width="2.5" stroke-dasharray="3 6" filter="url(#glow)"/>
+  <!-- Second orbital ring (smaller, opposite direction) -->
+  <circle cx="16" cy="16" r="9" stroke="#3DDC97" stroke-width="1.5" stroke-dasharray="6 3" opacity="0.6"/>
+  <!-- Central core -->
+  <circle cx="16" cy="16" r="4.5" fill="url(#orbitGradient)"/>
+  <!-- Inner core highlight -->
+  <circle cx="14.5" cy="14.5" r="1.5" fill="#ffffff" opacity="0.3"/>
 </svg>

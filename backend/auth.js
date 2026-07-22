@@ -4,7 +4,6 @@ import { db } from './db.js';
 
 const SECRET = process.env.JWT_SECRET || 'dev-insecure-secret-change-me';
 const COOKIE = 'pm_token';
-const MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 export async function registerUser(name, email, password, role) {
   const hash = await bcrypt.hash(password, 10);
@@ -52,7 +51,6 @@ export function setTokenCookie(res, token) {
   res.cookie(COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',
-    maxAge: MAX_AGE,
     path: '/',
   });
 }

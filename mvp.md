@@ -1,9 +1,9 @@
-# Cadence — Project Management Tool (MVP)
+﻿# Orbit — Modern Project Management Platform (MVP)
 
-**Cadence** is a focused, zero-config project management tool: projects, tasks,
+**Orbit** is a focused, zero-config project management platform: projects, tasks,
 a drag-and-drop kanban board, a sortable list view, members, and JWT auth.
 
-This file is the living MVP spec for the implementation in `pm-tool/`. It tracks
+This file is the living MVP spec for the implementation. It tracks
 what is built, the deliberate stack decisions, and how to run it.
 
 ## Stack
@@ -52,58 +52,49 @@ Ids are integers in the DB and serialized as strings across the API.
 |---|---|---|
 | `/login`, `/register` | Auth | done |
 | `/projects` | Project list (cards + progress %, New Project) | done |
-| `/projects/:id` | Kanban board (drag to change status) | done |
-| `/projects/:id/list` | Sortable table view | done |
-| `/projects/:id/settings` | Rename, manage members (owner only) | done |
+| `/projects/:id` | Kanban board (drag-and-drop) | done |
+| `/projects/:id/list` | List view (sortable table) | done |
+| `/projects/:id/settings` | Members, invites, project details | done |
 
-## Core flows
+## API surface (excerpt)
 
-1. **Create project** — `/projects` → New Project modal → owner auto-added as member.
-2. **Add teammate** — settings → invite by email → 404 "user must register first" if unknown.
-3. **Create/assign task** — board → Add Task → title, assignee, priority, due date.
-4. **Track progress** — drag card between columns → `PATCH /api/tasks/:id` status; project % = done/total.
-5. **Overdue flag** — client-side `dueDate < now && status !== 'done'` renders a red badge.
+All endpoints under `/api` unless noted.
 
-## API endpoints
-
-`POST /api/auth/register|login|logout`, `GET /api/auth/me`,
-`GET|POST /api/projects`, `GET|PATCH|DELETE /api/projects/:id`,
-`POST|DELETE /api/projects/:id/members[/:userId]`,
-`GET /api/projects/:id/tasks` (`?status=&assignee=`),
-`POST /api/projects/:id/tasks`, `PATCH|DELETE /api/tasks/:id`.
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/auth/register` | — | Create account, set cookie |
+| `POST` | `/auth/login` | — | Verify credentials, set cookie |
+| `POST` | `/auth/logout` | ✓ | Clear cookie |
+| `GET` | `/auth/me` | ✓ | Current user |
+| `GET` | `/projects` | ✓ | List users projects |
+| `POST` | `/projects` | ✓ | Create project (owner = caller) |
+| `GET` | `/projects/:id` | ✓ | Project + members + task counts |
+| `PATCH` | `/projects/:id` | owner | Update name / description |
+| `DELETE` | `/projects/:id` | owner | Delete project + tasks |
+| `POST` | `/projects/:id/members` | owner | Invite by email |
+| `DELETE` | `/projects/:id/members/:uid` | owner | Remove member |
+| `GET` | `/project/:id/tasks` | member | All tasks for board/list |
+| `POST` | `/project/:id/tasks` | member | Create task |
+| `PATCH` | `/tasks/:id` | member | Update task |
+| `DELETE` | `/tasks/:id` | member | Delete task |
 
 ## Run locally
 
 ```bash
-# terminal 1 — backend (PGlite data in backend/.data)
-cd pm-tool/backend && npm install && npm run dev      # http://localhost:3001
+# terminal 1 — backend (PGlite data lives in backend/.data)
+cd backend
+npm install
+npm run dev        # http://localhost:3001
 
-# terminal 2 — frontend (proxies /api -> :3001)
-cd pm-tool/frontend && npm install && npm run dev      # http://localhost:5173
+# terminal 2 — frontend
+cd frontend
+npm install
+npm run dev        # http://localhost:5173 (proxies /api -> :3001)
 ```
 
-Open http://localhost:5173, register, and create a project. The backend also
-serves the built `frontend/dist` when present, so a single process can host both.
+Open http://localhost:5173, register, and create a project.
 
-## Acceptance checklist
+## Scripts
 
-- [x] Register/login, session persists (JWT cookie + `/auth/me`)
-- [x] Create / rename / delete project (owner only)
-- [x] Add / remove members (owner only)
-- [x] Create task, assign to member, set priority + due date
-- [x] Drag task across kanban columns updates status
-- [x] List view sortable by due date / priority / assignee
-- [x] Overdue tasks visually flagged
-- [x] Responsive down to 375px
-- [ ] Deployed (Netlify/Vercel + Render + Atlas) — not deployed; local-only per MVP scope
-
-## Verification notes
-
-The backend was smoke-tested end-to-end (register → project → tasks → status
-change → delete) including the owner-only endpoints. Two ownership bugs were found
-and fixed during implementation: numeric DB ids were compared against the string
-`req.user.id`, so `requireProjectOwner` always 403'd and `is_owner` was always
-false. Both now coerce before comparing (`backend/auth.js`, `backend/routes/projects.js`).
-
-The frontend was reviewed statically; it was not compiled here because dependency
-install requires network access that is unavailable in this environment.
+- `backend`: `npm run dev` (watch) / `npm start`
+- `frontend`: `npm run dev` / `npm run build` / `npm run preview` 
