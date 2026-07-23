@@ -3,6 +3,7 @@ import type { Member, Task, TaskStatus } from '../types';
 import { STATUS_LABELS } from '../types';
 import { STATUS_COLOR } from '../status';
 import TaskCard from './TaskCard';
+import { StatusPill } from '@/components/orbit/StatusPill';
 
 interface ColumnProps {
   status: TaskStatus;
@@ -38,7 +39,7 @@ export default function Column({ status, tasks, members, onDropTask, onOpenTask 
       }}
     >
       <div className="column-head">
-        <span className="column-title">{STATUS_LABELS[status]}</span>
+        <StatusPill value={status} className="text-xs" />
         <span className="column-count">{tasks.length}</span>
       </div>
       <div className="column-body">

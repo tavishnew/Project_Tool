@@ -11,6 +11,7 @@ import SettingsPage from "./pages/SettingsPage";
 import InvitePage from "./pages/InvitePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import LandingPage from "./pages/LandingPage";
+import MembersPage from "./pages/MembersPage";
 
 function Protected({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/projects/:id" element={<Protected><BoardPage /></Protected>} />
         <Route path="/projects/:id/list" element={<Protected><ListPage /></Protected>} />
         <Route path="/projects/:id/settings" element={<Protected><SettingsPage /></Protected>} />
+        <Route path="/members" element={<Protected><MembersPage /></Protected>} />
       </Route>
       <Route path="/invite/:token" element={<InvitePage />} />
       <Route path="*" element={<NotFoundPage />} />

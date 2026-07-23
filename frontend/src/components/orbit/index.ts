@@ -10,5 +10,5 @@ export { GridNoiseBackground } from "./GridNoiseBackground";
 export { PageTransition } from "./PageTransition";
 export { AppSidebar } from "./AppSidebar";
 export { Topbar } from "./Topbar";
-export { newProjectDialog } from "./new-project-dialog";
-export { taskDialog } from "./task-dialog";
+export { default as newProjectDialog } from "./new-project-dialog";
+export { default as taskDialog } from "./task-dialog";

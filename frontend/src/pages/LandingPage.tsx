@@ -1,302 +1,230 @@
-﻿import React from "react";
-import { Link } from "react-router-dom";
-import { Aurora } from "../components/animations/Aurora";
-import { MagneticButton } from "../components/animations/MagneticButton";
-import { SpotlightCard } from "../components/animations/SpotlightCard";
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, Sparkles, KanbanSquare, Users, Zap, ShieldCheck, Layers } from "lucide-react";
+import { OrbitMark } from "@/components/orbit/OrbitMark";
+import { AuroraBlob } from "@/components/orbit/AuroraBlob";
+import { SpotlightCard } from "@/components/orbit/SpotlightCard";
+import { MagneticButton } from "@/components/orbit/MagneticButton";
+import { GridNoiseBackground } from "@/components/orbit/GridNoiseBackground";
 
 const features = [
   {
-    title: "Visual Project Boards",
-    description: "Kanban, list, and timeline views. Drag-and-drop tasks, custom columns, and real-time updates.",
+    icon: KanbanSquare,
+    title: "Adaptive kanban",
+    desc: "Drag cards across columns with animated flow. Everything stays in place — even the ones you didn&apos;t touch.",
   },
   {
-    title: "Team Collaboration",
-    description: "Comments, mentions, attachments, and activity feeds. Keep everyone aligned without meetings.",
+    icon: Users,
+    title: "Members without noise",
+    desc: "Invite by email, assign in one click. Role badges, avatars, and nothing else fighting for your attention.",
   },
   {
-    title: "Smart Automation",
-    description: "Rules, templates, and recurring tasks. Automate repetitive work and focus on what matters.",
+    icon: Zap,
+    title: "Fast by default",
+    desc: "Zero-config, local-first data, and a UI that stays fluid at any project size.",
   },
   {
-    title: "Insights & Reports",
-    description: "Burndown charts, velocity tracking, and custom dashboards. Data-driven decisions made simple.",
+    icon: ShieldCheck,
+    title: "Secure sessions",
+    desc: "httpOnly JWT cookies, session persistence, and no third-party trackers.",
   },
   {
-    title: "Integrations",
-    description: "GitHub, GitLab, Slack, Figma, and 50+ tools. Connect your workflow seamlessly.",
+    icon: Layers,
+    title: "Board and list, together",
+    desc: "The same project, two lenses. Pivot between kanban and structured list without losing context.",
   },
   {
-    title: "Enterprise Security",
-    description: "SSO, audit logs, granular permissions, and SOC 2 compliance. Your data stays protected.",
+    icon: Sparkles,
+    title: "Delight in the details",
+    desc: "Motion, typography, and empty states designed to make everyday planning feel a little lighter.",
   },
 ];
 
-const stats = [
-  { value: 10000, suffix: "+", label: "Teams Active" },
-  { value: 50000000, suffix: "+", label: "Tasks Completed" },
-  { value: 99.9, suffix: "%", label: "Uptime SLA" },
-  { value: 50, suffix: "+", label: "Integrations" },
+const steps = [
+  "Create a project and pick a color.",
+  "Invite teammates with a single email.",
+  "Drop tasks into columns. Watch them flow.",
+  "Ship. Review. Repeat.",
 ];
 
 export default function LandingPage() {
+  const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950">
-      <style>{`
-        @keyframes aurora {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-up {
-          animation: fadeInUp 0.8s ease-out forwards;
-          opacity: 0;
-        }
-        .delay-100 { animation-delay: 100ms; }
-        .delay-200 { animation-delay: 200ms; }
-        .delay-300 { animation-delay: 300ms; }
-        .delay-400 { animation-delay: 400ms; }
-        .delay-500 { animation-delay: 500ms; }
-        .delay-600 { animation-delay: 600ms; }
-        .delay-700 { animation-delay: 700ms; }
-      `}</style>
+    <div className="relative min-h-svh overflow-hidden bg-background scrollbar-hide">
+      <GridNoiseBackground />
+      <AuroraBlob className="pointer-events-none absolute inset-0" />
 
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-emerald-500">
-              <defs>
-                <linearGradient id="navGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#1E3A5F"></stop>
-                  <stop offset="50%" stopColor="#3DDC97"></stop>
-                  <stop offset="100%" stopColor="#1E3A5F"></stop>
-                </linearGradient>
-              </defs>
-              <circle cx="16" cy="16" r="13" stroke="url(#navGradient)" strokeWidth="2.5" strokeDasharray="3 6"></circle>
-              <circle cx="16" cy="16" r="9" stroke="#3DDC97" strokeWidth="1.5" strokeDasharray="6 3" opacity="0.6"></circle>
-              <circle cx="16" cy="16" r="4.5" fill="url(#navGradient)"></circle>
-              <circle cx="14.5" cy="14.5" r="1.5" fill="#ffffff" opacity="0.3"></circle>
-            </svg>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">Orbit</span>
-          </div>
-          <div className="hidden md:flex items-center gap-8">
-            <Link to="#features" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-sm font-medium">Features</Link>
-            <Link to="#pricing" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-sm font-medium">Pricing</Link>
-            <Link to="#about" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-sm font-medium">About</Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-sm font-medium">Sign in</Link>
-            <MagneticButton
-              strength={0.3}
-              className="px-6 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold text-sm hover:shadow-[0_10px_30px_-5px_rgba(0,0,0,0.2)] transition-shadow"
-            >
-              <Link to="/register" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
-                Get Started
-              </Link>
-            </MagneticButton>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 pt-20 overflow-hidden">
-        <Aurora colorStops={["#1E3A5F", "#3DDC97", "#2E86AB"]} speed={20} className="opacity-15 pointer-events-none" />
-        
-        <div className="relative z-10 max-w-6xl mx-auto text-center py-20">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-sm font-medium mb-8 animate-fade-in-up">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            Now with AI-powered project insights
-          </div>
-
-          {/* Headline */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-gray-900 dark:text-white mb-6 leading-[1.05] animate-fade-in-up delay-200">
-            Project management that{" "}
-            <span className="text-emerald-500">actually works for your team</span>
-          </h1>
-
-          {/* Subheadline */}
-          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-12 leading-relaxed animate-fade-in-up delay-300">
-            Stop fighting your tools. Orbit combines boards, docs, automation, and analytics in one beautiful workspace your team will actually enjoy using.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up delay-400">
-            <MagneticButton
-              strength={0.4}
-              className="px-10 py-5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold text-lg hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] transition-shadow"
-            >
-              <Link to="/register" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
-                Start Free - No Credit Card
-              </Link>
-            </MagneticButton>
-            <Link 
-              to="/login" 
-              className="px-10 py-5 rounded-xl border-2 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-semibold text-lg hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all"
-            >
-              Watch Demo
-            </Link>
-          </div>
-
-          {/* Trust badges */}
-          <div className="flex flex-wrap items-center justify-center gap-8 mt-16 text-sm text-gray-500 dark:text-gray-400 animate-fade-in-up delay-500">
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-              Free for up to 5 members
-            </span>
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-              14-day Pro trial
-            </span>
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-              Cancel anytime
-            </span>
-          </div>
-        </div>
-
-        {/* Scroll indicator */}
-        <div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
-        >
-          <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
-        </div>
-      </section>
-
-      {/* Trusted by */}
-      <section className="py-16 px-6 border-y border-gray-100 dark:border-gray-800">
-        <div className="max-w-7xl mx-auto">
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-10 font-medium tracking-wider uppercase">Trusted by innovative teams worldwide</p>
-          <div className="flex flex-wrap items-center justify-center gap-12 md:gap-16 opacity-60">
-            {["Acme Corp", "Globex", "Wayne Enterprises", "Stark Industries", "Umbrella Corp", "Initech"].map((name, i) => (
-              <span
-                key={name}
-                style={{ animationDelay: `${100 * i}ms` }}
-                className="text-gray-400 dark:text-gray-500 font-semibold text-lg animate-fade-in-up"
-              >
-                {name}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="py-20 px-6 bg-gray-50 dark:bg-gray-900/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, i) => (
-              <div
-                key={stat.label}
-                style={{ animationDelay: `${100 * i}ms` }}
-                className="text-center animate-fade-in-up"
-              >
-                <div className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
-                  {stat.value.toLocaleString()}<span className="text-emerald-500">{stat.suffix}</span>
-                </div>
-                <p className="mt-2 text-gray-600 dark:text-gray-400 font-medium">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section id="features" className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16 animate-fade-in-up">
-            <span className="inline-block px-4 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-sm font-medium mb-4">
-              Everything you need
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
-              Features that <span className="text-emerald-500">power your workflow</span>
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              From solo builders to enterprise teams. Orbit scales with you.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, i) => (
-              <div key={feature.title} style={{ animationDelay: `${100 * i}ms` }} className="animate-fade-in-up">
-                <SpotlightCard
-                  className="p-8 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors"
-                  spotlightColor="rgba(61, 220, 151, 0.08)"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-6">
-                    <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{feature.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{feature.description}</p>
-                </SpotlightCard>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative py-24 px-6">
-        <Aurora colorStops={["#1E3A5F", "#2E86AB", "#3DDC97"]} speed={25} className="opacity-10 pointer-events-none" />
-        
-        <div className="relative z-10 max-w-4xl mx-auto text-center animate-fade-in-up">
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
-            Ready to transform how your team works?
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-10 max-w-2xl mx-auto">
-            Join thousands of teams already using Orbit. Free for up to 5 members, no credit card required.
-          </p>
-          <MagneticButton
-            strength={0.4}
-            className="px-10 py-5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold text-lg hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] transition-shadow"
+      <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6">
+        <Link to="/" className="flex items-center gap-2">
+          <OrbitMark />
+          <span className="font-display text-xl font-bold tracking-tight">Orbit</span>
+        </Link>
+        <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
+          <a href="#features" className="hover:text-foreground">Features</a>
+          <a href="#workflow" className="hover:text-foreground">Workflow</a>
+          <a href="#pricing" className="hover:text-foreground">Pricing</a>
+        </nav>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/login"
+            className="rounded-full px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary"
           >
-            <Link to="/register" style={{ textDecoration: "none", color: "inherit", display: "block" }}>
-              Get Started Free
-            </Link>
+            Sign in
+          </Link>
+          <MagneticButton onClick={() => navigate("/register")} className="px-5 py-2.5 text-sm">
+            Get started
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </MagneticButton>
+        </div>
+      </header>
+
+      <section className="relative z-10 mx-auto max-w-7xl px-6 pb-24 pt-16 text-center md:pt-24">
+        <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur animate-fade-in-up">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          New: adaptive kanban with animated flow
+        </div>
+        <h1 className="mx-auto max-w-4xl font-display text-5xl font-bold leading-[1.05] tracking-tight md:text-7xl animate-fade-in-up delay-200">
+          Project work,{" "}
+          <span className="text-primary">calmly orchestrated.</span>
+        </h1>
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground animate-fade-in-up delay-300">
+          Orbit gives small teams a single, quiet surface for projects, tasks, and members.
+          No plugins, no ceremony — just the flow you already run.
+        </p>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3 animate-fade-in-up delay-400">
+          <MagneticButton onClick={() => navigate("/register")}>
+            Start for free
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </MagneticButton>
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-5 py-3 text-sm font-medium backdrop-blur transition-colors hover:bg-secondary"
+          >
+            See a live demo
+          </Link>
+        </div>
+
+        <div className="mx-auto mt-20 max-w-5xl animate-fade-in-up delay-500">
+          <PreviewSurface />
+        </div>
+      </section>
+
+      <section id="features" className="relative z-10 mx-auto max-w-7xl px-6 py-24">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary">Everything, nothing more</p>
+          <h2 className="mt-3 font-display text-4xl font-bold tracking-tight md:text-5xl">The pieces that actually move work forward.</h2>
+        </div>
+        <div className="mt-14 grid gap-5 md:grid-cols-3">
+          {features.map((f, i) => (
+            <div key={f.title} className="animate-slide-in-up" style={{ animationDelay: `${i * 60}ms` }}>
+              <SpotlightCard>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <f.icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-5 font-display text-lg font-semibold">{f.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+              </SpotlightCard>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="workflow" className="relative z-10 mx-auto max-w-7xl px-6 pb-24">
+        <div className="rounded-3xl border border-border bg-secondary/60 p-10 md:p-16">
+          <div className="grid gap-10 md:grid-cols-2 md:items-center">
+            <div>
+              <h2 className="font-display text-4xl font-bold tracking-tight md:text-5xl">From backlog to shipped in one calm surface.</h2>
+              <p className="mt-4 text-muted-foreground">Move a card, invite a teammate, see progress in a glance. Orbit gets out of the way so your team can stay in it.</p>
+              <div className="mt-8 flex flex-col gap-3">
+                {steps.map((s, i) => (
+                  <div key={s} className="flex items-center gap-3 text-sm animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
+                    <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">{i + 1}</span>
+                    {s}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="relative"><PreviewBoard /></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" className="relative z-10 mx-auto max-w-3xl px-6 pb-32 text-center">
+        <h2 className="font-display text-4xl font-bold tracking-tight md:text-5xl">Bring your team into Orbit.</h2>
+        <p className="mt-4 text-muted-foreground">Free while in beta. No card, no fuss.</p>
+        <div className="mt-8">
+          <MagneticButton onClick={() => navigate("/register")}>
+            Create your workspace <ArrowRight className="ml-2 h-4 w-4" />
           </MagneticButton>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950/50">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="text-emerald-500">
-              <defs>
-                <linearGradient id="footerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#1E3A5F"></stop>
-                  <stop offset="50%" stopColor="#3DDC97"></stop>
-                  <stop offset="100%" stopColor="#1E3A5F"></stop>
-                </linearGradient>
-              </defs>
-              <circle cx="16" cy="16" r="13" stroke="url(#footerGradient)" strokeWidth="2.5" strokeDasharray="3 6"></circle>
-              <circle cx="16" cy="16" r="9" stroke="#3DDC97" strokeWidth="1.5" strokeDasharray="6 3" opacity="0.6"></circle>
-              <circle cx="16" cy="16" r="4.5" fill="url(#footerGradient)"></circle>
-              <circle cx="14.5" cy="14.5" r="1.5" fill="#ffffff" opacity="0.3"></circle>
-            </svg>
-            <span className="text-xl font-bold">Orbit</span>
-          </div>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">
-            \u00A9 {new Date().getFullYear()} Orbit. Built for teams that ship.
-          </p>
-          <div className="flex items-center gap-6">
-            <a href="#" className="text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors text-sm">Privacy</a>
-            <a href="#" className="text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors text-sm">Terms</a>
-            <a href="#" className="text-gray-500 dark:text-gray-400 hover:text-emerald-500 transition-colors text-sm">Contact</a>
-          </div>
+      <footer className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between border-t border-border px-6 py-8 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2"><OrbitMark size={20} /><span>© {new Date().getFullYear()} Orbit</span></div>
+        <div className="flex gap-6">
+          <a href="#" className="hover:text-foreground">Privacy</a>
+          <a href="#" className="hover:text-foreground">Terms</a>
+          <a href="#" className="hover:text-foreground">Contact</a>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function PreviewSurface() {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-[0_40px_120px_-40px_oklch(0.68_0.19_32/0.25)]">
+      <div className="flex items-center gap-2 border-b border-border bg-secondary/50 px-4 py-3">
+        <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30" />
+        <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30" />
+        <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/30" />
+        <span className="ml-4 rounded-full bg-background px-3 py-1 text-xs text-muted-foreground">orbit.app / projects / aurora-launch</span>
+      </div>
+      <div className="grid grid-cols-4 gap-3 p-6">
+        {["Backlog", "In progress", "Review", "Done"].map((col, ci) => (
+          <div key={col} className="rounded-xl bg-secondary/50 p-3">
+            <div className="mb-3 flex items-center justify-between text-xs font-semibold text-muted-foreground">
+              <span>{col}</span>
+              <span>{[4, 3, 2, 5][ci]}</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="rounded-lg border border-border bg-card p-3 animate-slide-in-right" style={{ animationDelay: `${(ci * 3 + i) * 40}ms` }}>
+                  <div className="mb-2 h-2 w-3/4 rounded-full bg-muted" />
+                  <div className="h-2 w-1/2 rounded-full bg-muted" />
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="rounded-full px-1.5 py-0.5 text-[9px] font-medium" style={{ background: "oklch(0.68 0.19 32 / 0.1)", color: "oklch(0.55 0.19 32)" }}>High</span>
+                    <span className="h-5 w-5 rounded-full bg-primary" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PreviewBoard() {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+      {[
+        { title: "Onboarding v2", pct: 62, color: "#ff5a4e" },
+        { title: "Design tokens", pct: 40, color: "#f59e0b" },
+        { title: "Marketing site", pct: 84, color: "#6366f1" },
+      ].map((p) => (
+        <div key={p.title} className="flex items-center gap-4 border-b border-border py-3 last:border-b-0 animate-slide-in-left">
+          <span className="h-8 w-8 rounded-lg" style={{ backgroundColor: p.color }} />
+          <div className="flex-1">
+            <div className="text-sm font-semibold">{p.title}</div>
+            <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${p.pct}%` }} />
+            </div>
+          </div>
+          <span className="text-xs font-medium text-muted-foreground">{p.pct}%</span>
+        </div>
+      ))}
     </div>
   );
 }

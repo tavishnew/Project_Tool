@@ -14,6 +14,7 @@ export interface Member {
   email: string;
   avatarUrl?: string | null;
   isOwner: boolean;
+  color?: string;
 }
 
 export interface Project {

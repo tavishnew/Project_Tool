@@ -1,8 +1,50 @@
-﻿import { useState } from "react";
+import React from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { api } from "../api";
-import { useAuth } from "../auth";
-import { useToast } from "../components/Toast";
+import { useState, type FormEvent } from "react";
+import { api } from "@/api";
+import { useAuth } from "@/auth";
+import { useToast } from "@/components/Toast";
+import { OrbitMark } from "@/components/orbit/OrbitMark";
+import { AuroraBlob } from "@/components/orbit/AuroraBlob";
+import { ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+
+export function AuthShell({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative min-h-svh overflow-hidden bg-background lg:grid lg:grid-cols-2">
+      <div className="relative z-10 flex flex-col justify-between p-8 lg:p-12">
+        <Link to="/" className="flex items-center gap-2" style={{ color: "hsl(var(--foreground))" }}>
+          <OrbitMark />
+          <span>Orbit</span>
+        </Link>
+        <div className="mx-auto w-full max-w-sm animate-fade-in-up">
+          <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">{title}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
+          <div className="mt-8">{children}</div>
+        </div>
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Orbit</p>
+      </div>
+      <div className="relative hidden overflow-hidden bg-secondary/50 lg:block">
+        <AuroraBlob className="pointer-events-none absolute inset-0" />
+        <div className="relative z-10 flex h-full flex-col items-center justify-center p-16 text-center">
+          <div className="relative"><OrbitMark size={140} /></div>
+          <p className="mt-10 max-w-md font-display text-2xl leading-snug tracking-tight">"Orbit is the first project tool my team actually keeps open all day."</p>
+          <p className="mt-3 text-sm text-muted-foreground">— Milo Ray, Head of Product</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const { setUser } = useAuth();
@@ -15,7 +57,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError("");
@@ -25,11 +67,11 @@ export default function LoginPage() {
       notify(`Welcome back, ${user.name}`);
       if (invite) {
         try {
-          const r = await api.acceptInvite(invite);
-          navigate(`/projects/${r.projectId}`);
+          const { projectId } = await api.acceptInvite(invite);
+          navigate(`/projects/${projectId}`);
           return;
         } catch {
-          /* invite already used/expired — go to projects */
+          // invite already used/expired — go to projects
         }
       }
       navigate("/projects");
@@ -40,60 +82,25 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-wrap">
-      <div className="auth-card">
-        <div className="auth-brand">
-          <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="orbitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#1E3A5F"/>
-                <stop offset="50%" stopColor="#3DDC97"/>
-                <stop offset="100%" stopColor="#1E3A5F"/>
-              </linearGradient>
-            </defs>
-            <circle cx="16" cy="16" r="13" stroke="url(#orbitGradient)" strokeWidth="2.5" strokeDasharray="3 6"/>
-            <circle cx="16" cy="16" r="9" stroke="#3DDC97" strokeWidth="1.5" strokeDasharray="6 3" opacity="0.6"/>
-            <circle cx="16" cy="16" r="4.5" fill="url(#orbitGradient)"/>
-            <circle cx="14.5" cy="14.5" r="1.5" fill="#ffffff" opacity="0.3"/>
-          </svg>
-          <span>Orbit</span>
+    <AuthShell title="Welcome back" subtitle="Sign in to keep the work moving.">
+      <form onSubmit={submit} className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
-        <h1>Sign in</h1>
-        <p className="auth-sub">Modern project management for high-performing teams.</p>
-        <form onSubmit={submit}>
-          <div className="field">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              className="input"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="field">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              className="input"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          {error && <div className="form-error">{error}</div>}
-          <button type="submit" className="btn btn-primary" style={{ width: "100%" }} disabled={busy}>
-            Sign in
-          </button>
-        </form>
-        <p className="auth-switch">
-          New here? <Link to="/register">Create an account</Link>
+        <div className="space-y-1.5">
+          <Label htmlFor="pw">Password</Label>
+          <Input id="pw" type="password" defaultValue="demo-pass" required />
+        </div>
+        <Button type="submit" className="w-full rounded-full" size="lg" disabled={busy}>
+          {busy ? "Signing in…" : <>Sign in <ArrowRight className="ml-2 h-4 w-4" /></>}
+        </Button>
+        <p className="pt-2 text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link to="/register" className="font-semibold text-primary hover:underline">Create one</Link>
         </p>
-      </div>
-    </div>
+      </form>
+      {error && <div className="mt-4 text-sm text-destructive text-center">{error}</div>}
+    </AuthShell>
   );
 }

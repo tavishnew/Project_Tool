@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate, useParams } from 'react-router-dom';
-import { api } from '../api';
-import type { Project } from '../types';
-import { useAuth } from '../auth';
-import InviteModal from '../components/InviteModal';
-import { useToast } from '../components/Toast';
+import { api } from '@/api';
+import type { Project, Member } from '@/types';
+import { useAuth } from '@/auth';
+import InviteModal from '@/components/InviteModal';
+import { useToast } from '@/components/Toast';
+import { MemberAvatar } from '@/components/orbit/MemberAvatar';
+import { Badge } from '@/components/ui/Badge';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Textarea } from '@/components/ui/Textarea';
+import { Label } from '@/components/ui/Label';
 
 export default function SettingsPage() {
   const { id = '' } = useParams();
@@ -93,69 +99,88 @@ export default function SettingsPage() {
   return (
     <div style={{ maxWidth: 680 }}>
       <div className="board-toolbar">
-        <Link to="/projects" className="btn btn-ghost">← Projects</Link>
-        <h1 className="page-title" style={{ fontSize: 22 }}>Settings</h1>
+        <Link to="/projects" className="btn btn-ghost">
+          ← Projects
+        </Link>
+        <h1 className="page-title" style={{ fontSize: 22 }}>
+          Settings
+        </h1>
         <div style={{ marginLeft: 'auto' }}>
           <div className="seg">
-            <NavLink to={`/projects/${id}`} end className={({ isActive }) => (isActive ? 'active' : '')}>Board</NavLink>
-            <NavLink to={`/projects/${id}/list`} className={({ isActive }) => (isActive ? 'active' : '')}>List</NavLink>
-            <NavLink to={`/projects/${id}/settings`} className={({ isActive }) => (isActive ? 'active' : '')}>Settings</NavLink>
+            <NavLink to={`/projects/${id}`} end className={({ isActive }) => (isActive ? 'active' : '')}>
+              Board
+            </NavLink>
+            <NavLink to={`/projects/${id}/list`} className={({ isActive }) => (isActive ? 'active' : '')}>
+              List
+            </NavLink>
+            <NavLink to={`/projects/${id}/settings`} className={({ isActive }) => (isActive ? 'active' : '')}>
+              Settings
+            </NavLink>
           </div>
         </div>
       </div>
 
-      <section style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--radius)', padding: 22, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 16, marginBottom: 16 }}>Project details</h2>
-        <form onSubmit={saveDetails}>
-          <div className="field">
-            <label htmlFor="s-name">Name</label>
-            <input id="s-name" className="input" value={name} disabled={!isOwner} onChange={(e) => setName(e.target.value)} />
+      <section className="rounded-2xl border border-border bg-card p-6 mb-8">
+        <h2 className="font-display text-lg font-semibold mb-4">Project details</h2>
+        <form onSubmit={saveDetails} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="s-name">Name</Label>
+            <Input id="s-name" className="max-w-md" value={name} disabled={!isOwner} onChange={(e) => setName(e.target.value)} />
           </div>
-          <div className="field">
-            <label htmlFor="s-desc">Description</label>
-            <textarea id="s-desc" className="textarea" value={description} disabled={!isOwner} onChange={(e) => setDescription(e.target.value)} />
+          <div className="space-y-2">
+            <Label htmlFor="s-desc">Description</Label>
+            <Textarea id="s-desc" className="max-w-md" value={description} disabled={!isOwner} onChange={(e) => setDescription(e.target.value)} />
           </div>
           {isOwner && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <button type="submit" className="btn btn-primary" disabled={busy}>Save changes</button>
+            <div className="flex justify-end pt-2">
+              <Button type="submit" disabled={busy}>Save changes</Button>
             </div>
           )}
         </form>
       </section>
 
-      <section style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--radius)', padding: 22, marginBottom: 20 }}>
-        <h2 style={{ fontSize: 16, marginBottom: 16 }}>Members ({project?.members?.length ?? 0})</h2>
+      <section className="rounded-2xl border border-border bg-card p-6 mb-8">
+        <h2 className="font-display text-lg font-semibold mb-4">
+          Members ({project?.members?.length ?? 0})
+        </h2>
         {project?.members?.map((m) => (
-          <div className="member-row" key={m.id}>
-            <div className="member-info">
-              <div className="member-name">{m.name}</div>
-              <div className="member-email">{m.email}</div>
+          <div key={m.id} className="flex items-center justify-between py-3 border-b border-border/50 last:border-0">
+            <div className="flex items-center gap-3">
+              <MemberAvatar member={{ ...m, color: m.color ?? '#6366f1' }} size={32} />
+              <div>
+                <div className="font-semibold">{m.name}</div>
+                <div className="text-xs text-muted-foreground">{m.email}</div>
+              </div>
             </div>
-            {m.isOwner && <span className="owner-tag">Owner</span>}
-            {canManage && !m.isOwner && (
-              <button className="btn btn-danger" onClick={() => removeMember(m.id)}>Remove</button>
-            )}
+            <div className="flex items-center gap-2">
+              {m.isOwner && <Badge variant="secondary" className="text-xs">Owner</Badge>}
+              {canManage && !m.isOwner && (
+                <Button variant="destructive" size="sm" onClick={() => removeMember(m.id)}>Remove</Button>
+              )}
+            </div>
           </div>
         ))}
         {canManage && (
-          <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
-            <button type="button" className="btn btn-primary" onClick={() => setShowInvite(true)}>
-              Invite link
-            </button>
-            <form onSubmit={addMember} style={{ display: 'flex', gap: 10, flex: 1, minWidth: 240 }}>
-              <input
-                className="input"
+          <div className="flex flex-wrap gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowInvite(true)}>
+              <span className="mr-2">+</span>Invite link
+            </Button>
+            <form onSubmit={addMember} className="flex gap-2 flex-1 min-w-[240px]">
+              <Input
                 type="email"
                 placeholder="Registered teammate's email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 min-w-0"
               />
-              <button type="submit" className="btn btn-ghost" disabled={busy}>Add</button>
+              <Button type="submit" disabled={busy}>
+                Add
+              </Button>
             </form>
           </div>
         )}
         {canManage && (
-          <p style={{ color: 'var(--muted)', fontSize: 12, marginTop: 8 }}>
+          <p className="text-xs text-muted-foreground mt-2">
             Share an invite link (or email) — teammates can join even before registering.
           </p>
         )}
@@ -165,15 +190,16 @@ export default function SettingsPage() {
       )}
 
       {canManage && (
-        <section style={{ background: 'var(--surface)', border: '1px solid #f3cfc4', borderRadius: 'var(--radius)', padding: 22 }}>
-          <h2 style={{ fontSize: 16, marginBottom: 8, color: 'var(--overdue)' }}>Danger zone</h2>
-          <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 12 }}>
+        <section className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6">
+          <h2 className="font-display text-lg font-semibold mb-2 text-destructive">Danger zone</h2>
+          <p className="text-sm text-muted-foreground mb-4">
             Deleting a project removes all of its tasks permanently.
           </p>
-          <button className="btn btn-danger" onClick={deleteProject}>Delete project</button>
+          <Button variant="destructive" onClick={deleteProject}>
+            Delete project
+          </Button>
         </section>
       )}
     </div>
   );
 }
-
