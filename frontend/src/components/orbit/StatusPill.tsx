@@ -1,20 +1,21 @@
 import { cn } from "@/lib/utils";
+import { TaskStatus } from "@/types";
 
-type Status = "todo" | "in_progress" | "done";
-
-const statusLabels: Record<Status, string> = {
+const statusLabels: Record<TaskStatus, string> = {
   todo: "To Do",
   in_progress: "In Progress",
+  review: "In Review",
   done: "Done",
 };
 
-const statusStyles: Record<Status, string> = {
+const statusStyles: Record<TaskStatus, string> = {
   todo: "bg-muted text-muted-foreground",
   in_progress: "bg-info/10 text-info",
+  review: "bg-warning/15 text-warning",
   done: "bg-success/15 text-success",
 };
 
-export function StatusPill({ value, className }: { value: Status; className?: string }) {
+export function StatusPill({ value, className }: { value: TaskStatus; className?: string }) {
   return (
     <span
       className={cn(

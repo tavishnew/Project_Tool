@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useStore } from "./mock-store";
+import { useAuth } from "@/auth";
 
 export function useHydrated() {
   const [h, setH] = useState(false);
@@ -8,7 +8,6 @@ export function useHydrated() {
 }
 
 export function useAuthUser() {
-  const hydrated = useHydrated();
-  const user = useStore((s) => s.user);
-  return { user: hydrated ? user : null, hydrated };
+  const { user, loading } = useAuth();
+  return { user: loading ? null : user, hydrated: !loading };
 }

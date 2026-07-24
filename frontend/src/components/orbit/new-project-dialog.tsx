@@ -11,7 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useStore } from "@/lib/mock-store";
+import { api } from "@/api";
+import { useAuth } from "@/auth";
 import { cn } from "@/lib/utils";
 
 const COLORS = ["#ff5a4e", "#f59e0b", "#10b981", "#6366f1", "#ec4899", "#0ea5e9"];
@@ -23,19 +24,34 @@ export function NewProjectDialog({
   open: boolean;
   onOpenChange: (o: boolean) => void;
 }) {
-  const create = useStore((s) => s.createProject);
+  const { user } = useAuth();
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [color, setColor] = useState(COLORS[0]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function submit() {
+  const submit = async () => {
     if (!name.trim()) return;
-    create({ name: name.trim(), description: desc.trim(), color });
-    setName("");
-    setDesc("");
-    setColor(COLORS[0]);
-    onOpenChange(false);
-  }
+    setLoading(true);
+    setError(null);
+    try{
+      await api.createProject({
+        name: name.trim(),
+        description: desc.trim(),
+        color,
+      });
+      setName("");
+      setDesc("");
+      setColor(COLORS[0]);
+      onOpenChange(false);
+    } catch (err) {
+      setError('Failed to create project');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -70,10 +86,13 @@ export function NewProjectDialog({
               ))}
             </div>
           </div>
+          {error && <p className="text-destructive">{error}</p>}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={submit}>Create project</Button>
+          <Button onClick={submit} disabled={loading}>
+            {loading ? 'Creating...' : 'Create project'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

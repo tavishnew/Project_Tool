@@ -1,5 +1,5 @@
-export type TaskStatus = 'todo' | 'in_progress' | 'done';
-export type TaskPriority = 'low' | 'medium' | 'high';
+export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface User {
   id: string;
@@ -56,18 +56,21 @@ export interface Invite {
 export const STATUS_LABELS: Record<TaskStatus, string> = {
   todo: 'To Do',
   in_progress: 'In Progress',
+  review: 'In Review',
   done: 'Done',
 };
 
-export const STATUS_ORDER: TaskStatus[] = ['todo', 'in_progress', 'done'];
+export const STATUS_ORDER: TaskStatus[] = ['todo', 'in_progress', 'review', 'done'];
 
 export const PRIORITY_LABELS: Record<TaskPriority, string> = {
   low: 'Low',
   medium: 'Medium',
   high: 'High',
+  urgent: 'Urgent',
 };
 
 export const PRIORITY_RANK: Record<TaskPriority, number> = {
+  urgent: 4,
   high: 3,
   medium: 2,
   low: 1,

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import type { Priority, Status } from "@/lib/mock-store";
-import { priorityLabels, statusLabels } from "@/lib/mock-store";
+import type { Priority, Status } from "@/types";
+import { PRIORITY_LABELS, STATUS_LABELS } from "@/types";
 
 const priorityStyles: Record<Priority, string> = {
   low: "bg-muted text-muted-foreground",
@@ -25,7 +25,7 @@ export function PriorityBadge({ value }: { value: Priority }) {
       )}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {priorityLabels[value]}
+      {PRIORITY_LABELS[value]}
     </span>
   );
 }
@@ -38,7 +38,7 @@ export function StatusPill({ value }: { value: Status }) {
         statusStyles[value],
       )}
     >
-      {statusLabels[value]}
+      {STATUS_LABELS[value]}
     </span>
   );
 }

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { Member } from "@/lib/mock-store";
+import type { Member } from "@/types";
 
 export function MemberAvatar({
   member,

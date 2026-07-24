@@ -32,10 +32,16 @@ export const api = {
     req(`/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteProject: (id: string) => req(`/projects/${id}`, { method: 'DELETE' }),
 
-  addMember: (id: string, email: string) =>
-    req(`/projects/${id}/members`, json({ email })),
-  removeMember: (id: string, userId: string) =>
-    req(`/projects/${id}/members/${userId}`, { method: 'DELETE' }),
+  // Workspace members (assuming these endpoints exist on the backend)
+  listMembers: () => req<{ members: import('./types').Member[] }>('/members'),
+  addMember: (email: string) => req<{ member: import('./types').Member }>('/members', json({ email })),
+  removeMember: (userId: string) => req(`/members/${userId}`, { method: 'DELETE' }),
+
+  // Project members
+  addProjectMember: (projectId: string, email: string) =>
+    req(`/projects/${projectId}/members`, json({ email })),
+  removeProjectMember: (projectId: string, userId: string) =>
+    req(`/projects/${projectId}/members/${userId}`, { method: 'DELETE' }),
 
   // Invites (admin + owner)
   createInvite: (id: string, email?: string) =>
@@ -61,4 +67,7 @@ export const api = {
   updateTask: (id: string, data: Record<string, unknown>) =>
     req(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteTask: (id: string) => req(`/tasks/${id}`, { method: 'DELETE' }),
+
+  // New: get all users (for workspace members)
+  getUsers: () => req<{ users: import('./types').User[] }>('/users'),
 };
