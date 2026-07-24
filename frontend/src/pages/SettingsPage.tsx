@@ -6,11 +6,11 @@ import { useAuth } from '@/auth';
 import InviteModal from '@/components/InviteModal';
 import { useToast } from '@/components/Toast';
 import { MemberAvatar } from '@/components/orbit/MemberAvatar';
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { Textarea } from '@/components/ui/Textarea';
-import { Label } from '@/components/ui/Label';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 export default function SettingsPage() {
   const { id = '' } = useParams();
@@ -203,3 +203,7 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+
+
+

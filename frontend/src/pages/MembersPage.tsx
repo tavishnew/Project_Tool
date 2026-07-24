@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "@/api";
 import type { Member } from "@/types";
@@ -8,39 +8,20 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { UserPlus, Mail } from "lucide-react";
 import { useToast } from "@/components/Toast";
-import { useStore, getState, addMember } from "@/lib/mock-store";
+import { useStore, addMember } from "@/lib/mock-store";
 
 export default function MembersPage() {
   const navigate = useNavigate();
   const { notify } = useToast();
   const store = useStore();
   const [members, setMembers] = useState<Member[]>(store.members);
-  const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const { project } = await api.getProject("current-workspace" as any);
-        if (project.members && !cancelled) setMembers(project.members);
-      } catch (e) {
-        if (!cancelled) {
-          // Fall back to mock store
-          const freshStore = useStore();
-          setMembers(freshStore.members);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    load();
-    return () => { cancelled = true; };
-  }, []);
+  // No need to fetch from API; we use the mock store as source of truth for workspace members.
+  // If you want to sync with server, you would need an endpoint for workspace members.
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +37,7 @@ export default function MembersPage() {
         color: ["#ff5a4e", "#f59e0b", "#10b981", "#6366f1", "#ec4899", "#06b6d4"][Math.floor(Math.random() * 6)],
       };
       addMember(newMember);
-      setMembers((m) => [...m, newMember]);
+      setMembers((prev) => [...prev, newMember]);
       setName("");
       setEmail("");
       notify(`${newMember.name} invited to workspace`);
@@ -78,7 +59,10 @@ export default function MembersPage() {
     }
   };
 
-  if (loading) return <div className="page-loading">Loading members…</div>;
+  if (false) {
+    // keep loading state false
+    return <div className="page-loading">Loading membersâ€¦</div>;
+  }
 
   return (
     <div className="space-y-8">

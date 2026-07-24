@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useToast } from '@/components/Toast';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/Input';
-import { Textarea } from '@/components/ui/Textarea';
-import { Select } from '@/components/ui/Select';
-import { Label } from '@/components/ui/Label';
-import Checkbox from "@/components/ui/Checkbox";
+import { Textarea } from '@/components/ui/textarea';
+import { Select } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import Checkbox from "@/components/ui/checkbox";
 import { PriorityBadge } from '@/components/orbit/PriorityBadge';
 import { StatusPill } from '@/components/orbit/StatusPill';
 import type { Task, TaskStatus, TaskPriority } from '@/types';
@@ -117,3 +117,7 @@ export default function TaskDialog({
     </div>
   );
 }
+
+
+
+

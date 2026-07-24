@@ -1,4 +1,16 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import {
   LayoutGrid,
   KanbanSquare,
@@ -8,152 +20,171 @@ import {
   LogOut,
   FolderKanban,
 } from "lucide-react";
-import { OrbitMark } from "./OrbitMark";
+import { OrbitMark } from "./orbit-mark";
 import { useAuth } from "@/auth";
+import { api } from "@/api";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/Toast";
-import { useStore } from "@/lib/mock-store";
+import * as React from "react";
 
 export function AppSidebar() {
-  const { user, refresh } = useAuth();
-  const { notify } = useToast();
-  const pathname = useLocation().pathname;
   const navigate = useNavigate();
-  const store = useStore();
-  const projects = store.projects;
+  const location = useLocation();
+  const { user } = useAuth();
+  const pathname = location.pathname;
 
-  const logout = async () => {
-    await fetch("/api/logout", { method: "POST" }).catch(() => {});
-    await refresh();
-    notify("Signed out");
-    navigate("/");
-  };
+  const [projects, setProjects] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchProjects = async () => {
+      if (!user) {
+        setProjects([]);
+        setLoading(false);
+        return;
+      }
+      try {
+        const res = await api.listProjects();
+        setProjects(res.projects ?? []);
+      } catch (err) {
+        console.error("Failed to fetch projects", err);
+        setProjects([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
+  }, [user]);
+
+  const { notify } = useToast();
 
   const isActive = (p: string) => pathname === p || pathname.startsWith(p + "/");
 
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+      notify("Signed out");
+    } catch (err) {
+      console.error("Logout failed", err);
+      notify("Failed to sign out", "error");
+    }
+    navigate("/", { replace: true });
+  };
+
   return (
-    <aside className="hidden lg:block w-64 border-r border-sidebar-border bg-sidebar flex flex-col">
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-4 border-b border-sidebar-border">
-          <Link to="/projects" className="flex items-center gap-2 px-2 py-1.5">
-            <OrbitMark size={26} />
-            <span className="font-display text-lg font-bold tracking-tight">Orbit</span>
-          </Link>
-        </div>
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="border-b border-sidebar-border">
+        <Link to="/projects" className="flex items-center gap-2 px-2 py-1.5">
+          <OrbitMark size={26} />
+          <span className="font-display text-lg font-bold tracking-tight">Orbit</span>
+        </Link>
+      </SidebarHeader>
 
-        <div className="p-4 space-y-6">
-          <div>
-            <p className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-              Workspace
-            </p>
-            <nav className="space-y-1">
-              <Link
-                to="/projects"
-                className={`
-                  flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors w-full justify-start
-                  ${isActive("/projects")
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
-                `}
-              >
-                <LayoutGrid className="h-4 w-4" />
-                <span>Dashboard</span>
-              </Link>
-              <Link
-                to="/members"
-                className={`
-                  flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors w-full justify-start
-                  ${isActive("/members")
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
-                `}
-              >
-                <Users className="h-4 w-4" />
-                <span>Members</span>
-              </Link>
-            </nav>
-          </div>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={pathname === "/projects"}>
+                  <Link to="/projects">
+                    <LayoutGrid />
+                    <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={pathname === "/members"}>
+                  <Link to="/members">
+                    <Users />
+                    <span>Members</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-          <div>
-            <p className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-              Projects
-            </p>
-            <nav className="space-y-1">
-              {projects.map((p) => (
-                <Link
-                  key={p.id}
-                  to={`/projects/${p.id}`}
-                  className={`
-                    flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors w-full justify-start
-                    ${isActive(`/projects/${p.id}`)
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
-                  `}
-                >
-                  <span
-                    className="h-2 w-2 shrink-0 rounded-full"
-                    style={{ backgroundColor: p.color }}
-                  />
-                  <span className="truncate">{p.name}</span>
-                </Link>
-              ))}
-            </nav>
-          </div>
+        <SidebarGroup>
+          <SidebarGroupLabel>Projects</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {loading ? (
+                <>
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <SidebarMenuItem key={i}>
+                      <SidebarMenuButton asChild>
+                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: "gray-200" }} />
+                        <span className="animate-pulse">Loading project...</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </>
+              ) : (
+                projects.map((p) => (
+                  <SidebarMenuItem key={p.id}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive(`/projects/${p.id}`)}
+                    >
+                      <Link to={`/projects/${p.id}`}>
+                        <span
+                          className="h-2 w-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: p.color }}
+                        />
+                        <span className="truncate">{p.name}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))
+              )}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
-          <div>
-            <p className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-              Discover
-            </p>
-            <nav className="spacey-1">
-              <button
-                className={`
-                  flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm font-medium transition-colors text-sidebar-foreground
-                  hover:bg-sidebar-accent hover:text-sidebar-accent-foreground
-                `}
-              >
-                <Sparkles className="h-4 w-4" />
-                <span>What's new</span>
-              </button>
-              <button
-                className={`
-                  flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm font-medium transition-colors text-sidebar-foreground
-                  hover:bg-sidebar-accent hover:text-sidebar-accent-foreground
-                `}
-              >
-                <FolderKanban className="h-4 w-4" />
-                <span>Templates</span>
-              </button>
-              <button
-                className={`
-                  flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm font-medium transition-colors text-sidebar-foreground
-                  hover:bg-sidebar-accent hover:text-sidebar-accent-foreground
-                `}
-              >
-                <KanbanSquare className="h-4 w-4" />
-                <span>Roadmap</span>
-              </button>
-              <button
-                className={`
-                  flex items-center gap-2 w-full rounded-lg px-3 py-2 text-sm font-medium transition-colors text-sidebar-foreground
-                  hover:bg-sidebar-accent hover:text-sidebar-accent-foreground
-                `}
-              >
-                <Settings className="h-4 w-4" />
-                <span>Preferences</span>
-              </button>
-            </nav>
-          </div>
-        </div>
+        <SidebarGroup>
+          <SidebarGroupLabel>Discover</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <Sparkles />
+                  <span>What''s new</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <FolderKanban />
+                  <span>Templates</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <KanbanSquare />
+                  <span>Roadmap</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <Settings />
+                  <span>Preferences</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
 
-        <div className="p-4 border-t border-sidebar-border">
-          <button
-            onClick={logout}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </button>
-        </div>
-      </div>
-    </aside>
+      <SidebarFooter className="border-t border-sidebar-border">
+        <Button
+          variant="ghost"
+          className="justify-start gap-2"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </Button>
+      </SidebarFooter>
+    </Sidebar>
   );
 }

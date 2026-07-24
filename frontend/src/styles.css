@@ -59,15 +59,15 @@
     --sidebar-border: oklch(0.93 0.005 60);
     --sidebar-ring: oklch(0.68 0.19 32 / 40%);
   }
-  
+
   .dark {
     color-scheme: light;
   }
-  
+
   * {
     border-color: hsl(var(--border));
   }
-  
+
   html, body, #root {
     height: 100%;
     background-color: hsl(var(--background));
@@ -75,7 +75,7 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
@@ -91,7 +91,7 @@
     background-size: 32px 32px;
     position: relative;
   }
-  
+
   .noise-overlay {
     position: absolute;
     inset: 0;
@@ -100,102 +100,102 @@
     mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   }
-  
+
   @keyframes shimmer {
     0% { background-position: 100% 0; }
     100% { background-position: -100% 0; }
   }
-  
+
   .skeleton {
     background: linear-gradient(90deg, hsl(var(--muted)) 25%, hsl(var(--muted) / 0.5) 37%, hsl(var(--muted)) 63%);
     background-size: 400% 100%;
     animation: shimmer 1.3s ease infinite;
     border-radius: 8px;
   }
-  
+
   @keyframes spin-slow {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
-  
+
   .animate-spin-slow {
     animation: spin-slow 14s linear infinite;
   }
-  
+
   @keyframes orbit-rotate {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
-  
+
   @keyframes orbit-pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.15); }
   }
-  
+
   @keyframes aurora-drift-1 {
     0%, 100% { transform: translate(0, 0); }
     25% { transform: translate(40px, -30px); }
     50% { transform: translate(-20px, 20px); }
     75% { transform: translate(-10px, -10px); }
   }
-  
+
   @keyframes aurora-drift-2 {
     0%, 100% { transform: translate(0, 0); }
     25% { transform: translate(-30px, 20px); }
     50% { transform: translate(30px, -30px); }
     75% { transform: translate(15px, 15px); }
   }
-  
+
   @keyframes pulse-soft {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.15); }
   }
-  
+
   .animate-pulse-soft {
     animation: pulse-soft 2.4s ease-in-out infinite;
   }
-  
+
   @keyframes fade-in-up {
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  
+
   .animate-fade-in-up {
     animation: fade-in-up 0.5s ease-out forwards;
   }
-  
+
   @keyframes fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
   }
-  
+
   .animate-fade-in {
     animation: fade-in 0.15s ease-out forwards;
   }
-  
+
   @keyframes modal-in {
     from { opacity: 0; transform: translateY(8px) scale(0.98); }
     to { opacity: 1; transform: none; }
   }
-  
+
   .animate-modal-in {
     animation: modal-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
-  
+
   @keyframes card-in {
     from { opacity: 0; transform: scale(0.96); }
     to { opacity: 1; transform: scale(1); }
   }
-  
+
   .animate-card-in {
     animation: card-in 0.18s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
-  
+
   @keyframes toast-in {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: none; }
   }
-  
+
   .animate-toast-in {
     animation: toast-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
@@ -603,10 +603,10 @@
 
 /* ---------- Scrollbar hiding ---------- */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari, Opera */
+  display: none;
 }
