@@ -17,29 +17,45 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
-import {
-  useStore,
-  statusLabels,
-  statusOrder,
-  priorityLabels,
-  type Priority,
-  type Status,
-  type Task,
-} from "@/lib/mock-store";
+import { api } from "@/api";
+import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
+import type { Task, TaskStatus, TaskPriority } from "@/types";
 
-const priorities: Priority[] = ["low", "medium", "high", "urgent"];
+const statuses: { value: TaskStatus; label: string }[] = [
+  { value: "todo", label: "To Do" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "review", label: "In Review" },
+  { value: "done", label: "Done" },
+];
 
-export function TaskDialog({ task, onClose }: { task: Task | null; onClose: () => void }) {
-  const update = useStore((s) => s.updateTask);
-  const del = useStore((s) => s.deleteTask);
-  const members = useStore((s) => s.members);
+const priorities: TaskPriority[] = ["low", "medium", "high", "urgent"];
+const priorityLabels: Record<TaskPriority, string> = {
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  urgent: "Urgent",
+};
 
+export function TaskDialog({
+  task,
+  members,
+  onClose,
+  onUpdate,
+  onDelete,
+}: {
+  task: Task | null;
+  members: { id: string; name: string }[];
+  onClose: () => void;
+  onUpdate: (id: string, data: Partial<Task>) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}) {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [status, setStatus] = useState<Status>("backlog");
-  const [priority, setPriority] = useState<Priority>("medium");
+  const [status, setStatus] = useState<TaskStatus>("todo");
+  const [priority, setPriority] = useState<TaskPriority>("medium");
   const [assigneeId, setAssigneeId] = useState<string | undefined>();
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -47,16 +63,35 @@ export function TaskDialog({ task, onClose }: { task: Task | null; onClose: () =
       setDesc(task.description ?? "");
       setStatus(task.status);
       setPriority(task.priority);
-      setAssigneeId(task.assigneeId);
+      setAssigneeId(task.assignee_id ?? undefined);
     }
   }, [task]);
 
   if (!task) return null;
 
-  function save() {
+  async function save() {
     if (!task) return;
-    update(task.id, { title, description: desc, status, priority, assigneeId });
-    onClose();
+    setSaving(true);
+    try {
+      await onUpdate(task.id, { title, description: desc, status, priority, assignee_id: assigneeId ?? null } as any);
+      toast.success("Task updated");
+      onClose();
+    } catch {
+      toast.error("Failed to update task");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!task) return;
+    try {
+      await onDelete(task.id);
+      toast.success("Task deleted");
+      onClose();
+    } catch {
+      toast.error("Failed to delete task");
+    }
   }
 
   return (
@@ -77,18 +112,18 @@ export function TaskDialog({ task, onClose }: { task: Task | null; onClose: () =
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label>Status</Label>
-              <Select value={status} onValueChange={(v) => setStatus(v as Status)}>
+              <Select value={status} onValueChange={(v) => setStatus(v as TaskStatus)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {statusOrder.map((s) => (
-                    <SelectItem key={s} value={s}>{statusLabels[s]}</SelectItem>
+                  {statuses.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
               <Label>Priority</Label>
-              <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
+              <Select value={priority} onValueChange={(v) => setPriority(v as TaskPriority)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {priorities.map((p) => (
@@ -112,19 +147,12 @@ export function TaskDialog({ task, onClose }: { task: Task | null; onClose: () =
           </div>
         </div>
         <DialogFooter className="justify-between sm:justify-between">
-          <Button
-            variant="ghost"
-            className="text-destructive hover:text-destructive"
-            onClick={() => {
-              del(task.id);
-              onClose();
-            }}
-          >
+          <Button variant="ghost" className="text-destructive hover:text-destructive" onClick={handleDelete} disabled={saving}>
             <Trash2 className="mr-2 h-4 w-4" /> Delete
           </Button>
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
-            <Button onClick={save}>Save changes</Button>
+            <Button variant="ghost" onClick={onClose} disabled={saving}>Cancel</Button>
+            <Button onClick={save} disabled={saving}>{saving ? "Saving…" : "Save changes"}</Button>
           </div>
         </DialogFooter>
       </DialogContent>
