@@ -11,9 +11,9 @@ import { ArrowRight } from "lucide-react";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Sign in — Orbit" },
+      { title: "Sign in â€” Orbit" },
       { name: "description", content: "Sign back into your Orbit workspace." },
-      { property: "og:title", content: "Sign in — Orbit" },
+      { property: "og:title", content: "Sign in â€” Orbit" },
       { property: "og:description", content: "Sign back into your Orbit workspace." },
     ],
   }),
@@ -72,12 +72,17 @@ function LoginPage() {
           />
         </div>
         <Button type="submit" className="w-full rounded-full" size="lg" disabled={loading}>
-          {loading ? "Signing in…" : <><span>Sign in</span><ArrowRight className="ml-2 h-4 w-4" /></>}
+          {loading ? "Signing inâ€”" : <><span>Sign in</span><ArrowRight className="ml-2 h-4 w-4" /></>}
         </Button>
         <p className="pt-2 text-center text-sm text-muted-foreground">
           Don't have an account?{" "}
           <Link to="/register" className="font-semibold text-primary hover:underline">
             Create one
+          </Link>
+        </p>
+        <p className="text-center text-sm text-muted-foreground">
+          <Link to="/forgot-password" className="font-semibold text-primary hover:underline">
+            Forgot password?
           </Link>
         </p>
       </form>

@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS projects (
   name TEXT NOT NULL,
   description TEXT DEFAULT '',
   owner_id INTEGER NOT NULL REFERENCES users(id),
+  color TEXT DEFAULT '#ff5a4e',
+  status TEXT NOT NULL DEFAULT 'active',
   created_at TIMESTAMPTZ DEFAULT now()
 );
 CREATE TABLE IF NOT EXISTS project_members (
@@ -43,6 +45,8 @@ CREATE TABLE IF NOT EXISTS tasks (
 );
 CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(project_id);
 CREATE INDEX IF NOT EXISTS idx_members_user ON project_members(user_id);
+-- Migration: add status column to projects (for existing databases)
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active';
 CREATE TABLE IF NOT EXISTS project_invites (
   id SERIAL PRIMARY KEY,
   project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
@@ -53,6 +57,15 @@ CREATE TABLE IF NOT EXISTS project_invites (
   used_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_invites_token ON project_invites(token);
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '1 hour'),
+  used_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_password_reset_token ON password_reset_tokens(token_hash);
 `;
 
 let ready;

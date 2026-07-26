@@ -1,5 +1,6 @@
 export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type ProjectStatus = 'active' | 'completed' | 'archived';
 
 export interface User {
   id: string;
@@ -28,6 +29,9 @@ export interface Project {
   member_count: number;
   is_owner?: boolean;
   members?: Member[];
+  member_ids?: string[];
+  color?: string;
+  status?: ProjectStatus;
 }
 
 export interface Task {

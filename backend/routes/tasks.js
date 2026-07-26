@@ -5,6 +5,14 @@ import { db } from '../db.js';
 const router = express.Router();
 router.use(requireAuth);
 
+// Validate numeric ID parameters
+router.param('id', (req, res, next, id) => {
+  if (!/^\d+$/.test(id)) {
+    return res.status(400).json({ error: 'Invalid task ID' });
+  }
+  next();
+});
+
 export function serializeTask(row) {
   return {
     id: String(row.id),
@@ -21,13 +29,40 @@ export function serializeTask(row) {
 
 // PATCH /api/tasks/:id — update any allowed field
 router.patch('/:id', requireTaskMember, async (req, res) => {
-  const { status, assigneeId, dueDate, priority, title, description } = req.body || {};
+  const { status, assigneeId, assignee_id, dueDate, priority, title, description } = req.body || {};
   const sets = [];
   const vals = [];
-  if (status !== undefined) { sets.push(`status = $${sets.length + 1}`); vals.push(status); }
-  if (assigneeId !== undefined) { sets.push(`assignee_id = $${sets.length + 1}`); vals.push(assigneeId ? Number(assigneeId) : null); }
+  if (status !== undefined) {
+    const validStatuses = ['todo', 'in_progress', 'review', 'done'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'invalid status' });
+    }
+    sets.push(`status = $${sets.length + 1}`);
+    vals.push(status);
+  }
+  // Support both assigneeId and assignee_id (snake_case from frontend)
+  const finalAssigneeId = assigneeId !== undefined ? assigneeId : assignee_id;
+  if (finalAssigneeId !== undefined) {
+    // If assigneeId is an empty string, treat as null (unassign)
+    let value = null;
+    if (finalAssigneeId !== '') {
+      const num = Number(finalAssigneeId);
+      if (!isNaN(num)) {
+        value = num;
+      }
+    }
+    sets.push(`assignee_id = $${sets.length + 1}`);
+    vals.push(value);
+  }
   if (dueDate !== undefined) { sets.push(`due_date = $${sets.length + 1}`); vals.push(dueDate || null); }
-  if (priority !== undefined) { sets.push(`priority = $${sets.length + 1}`); vals.push(priority); }
+  if (priority !== undefined) {
+    const validPriorities = ['low', 'medium', 'high', 'urgent'];
+    if (!validPriorities.includes(priority)) {
+      return res.status(400).json({ error: 'invalid priority' });
+    }
+    sets.push(`priority = $${sets.length + 1}`);
+    vals.push(priority);
+  }
   if (title !== undefined) { sets.push(`title = $${sets.length + 1}`); vals.push(title); }
   if (description !== undefined) { sets.push(`description = $${sets.length + 1}`); vals.push(description); }
   if (!sets.length) return res.status(400).json({ error: 'nothing to update' });

@@ -112,7 +112,7 @@ export function TaskDialog({
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label>Status</Label>
-              <Select value={status} onValueChange={(v) => setStatus(v as TaskStatus)}>
+              <Select value={status} onValueChange={(v: TaskStatus) => setStatus(v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {statuses.map((s) => (
@@ -123,7 +123,7 @@ export function TaskDialog({
             </div>
             <div className="space-y-1.5">
               <Label>Priority</Label>
-              <Select value={priority} onValueChange={(v) => setPriority(v as TaskPriority)}>
+              <Select value={priority} onValueChange={(v: TaskPriority) => setPriority(v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {priorities.map((p) => (
@@ -134,7 +134,7 @@ export function TaskDialog({
             </div>
             <div className="space-y-1.5">
               <Label>Assignee</Label>
-              <Select value={assigneeId ?? "none"} onValueChange={(v) => setAssigneeId(v === "none" ? undefined : v)}>
+              <Select value={assigneeId ?? "none"} onValueChange={(v: string) => setAssigneeId(v === "none" ? undefined : v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Unassigned</SelectItem>
@@ -152,7 +152,7 @@ export function TaskDialog({
           </Button>
           <div className="flex gap-2">
             <Button variant="ghost" onClick={onClose} disabled={saving}>Cancel</Button>
-            <Button onClick={save} disabled={saving}>{saving ? "Saving…" : "Save changes"}</Button>
+            <Button onClick={save} disabled={saving}>{saving ? "Savingï¿½" : "Save changes"}</Button>
           </div>
         </DialogFooter>
       </DialogContent>

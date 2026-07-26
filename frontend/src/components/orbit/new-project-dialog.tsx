@@ -20,9 +20,11 @@ const COLORS = ["#ff5a4e", "#f59e0b", "#10b981", "#6366f1", "#ec4899", "#0ea5e9"
 export function NewProjectDialog({
   open,
   onOpenChange,
+  onCreateProject,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  onCreateProject?: (name: string, description: string, color?: string) => Promise<void>;
 }) {
   const { user } = useAuth();
   const [name, setName] = useState("");
@@ -36,11 +38,11 @@ export function NewProjectDialog({
     setLoading(true);
     setError(null);
     try{
-      await api.createProject({
-        name: name.trim(),
-        description: desc.trim(),
-        color,
-      });
+      if (onCreateProject) {
+        await onCreateProject(name.trim(), desc.trim(), color);
+      } else {
+        await api.createProject(name.trim(), desc.trim(), color);
+      }
       setName("");
       setDesc("");
       setColor(COLORS[0]);

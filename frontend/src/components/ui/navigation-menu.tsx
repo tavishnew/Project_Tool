@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
@@ -120,4 +120,4 @@ export {
   NavigationMenuIndicator,
   NavigationMenuViewport,
 };
-export type { NavigationMenuTriggerProps } = VariantProps<typeof navigationMenuTriggerStyle>;
+export type NavigationMenuTriggerProps = VariantProps<typeof navigationMenuTriggerStyle>;

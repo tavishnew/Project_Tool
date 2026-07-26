@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { api } from "@/api";
 
-export const Route = createFileRoute("/invite/$token")({
+export const Route = createFileRoute("/invite/$token/")({
   head: () => ({
     meta: [
-      { title: "You're invited — Orbit" },
+      { title: "You're invited â€” Orbit" },
       { name: "description", content: "Accept your invitation to a workspace." },
-      { property: "og:title", content: "You're invited — Orbit" },
+      { property: "og:title", content: "You're invited â€” Orbit" },
       { property: "og:description", content: "Accept your invitation to a workspace." },
     ],
   }),
@@ -47,7 +47,7 @@ function InvitePage() {
           </div>
           <h1 className="font-display text-2xl font-bold tracking-tight">Welcome aboard!</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            You've joined the workspace. Taking you to your projects…
+            You've joined the workspace. Taking you to your projects...
           </p>
         </div>
       </div>
@@ -76,7 +76,11 @@ function InvitePage() {
           onClick={accept}
           disabled={loading}
         >
-          {loading ? "Accepting…" : <><CheckCircle2 className="mr-2 h-4 w-4" />Accept invite</>}
+          {loading ? "Accepting..." : (
+            <>
+              <CheckCircle2 className="mr-2 h-4 w-4" />Accept invite
+            </>
+          )}
         </Button>
         <Link
           to="/"

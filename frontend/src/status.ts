@@ -3,6 +3,7 @@ import type { TaskStatus } from './types';
 export const STATUS_COLOR: Record<TaskStatus, string> = {
   todo: 'var(--todo)',
   in_progress: 'var(--progress)',
+  review: 'var(--review)',
   done: 'var(--done)',
 };
 

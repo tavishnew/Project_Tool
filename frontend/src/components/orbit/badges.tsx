@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { Priority, Status } from "@/types";
+import type { TaskPriority as Priority, TaskStatus as Status } from "@/types";
 import { PRIORITY_LABELS, STATUS_LABELS } from "@/types";
 
 const priorityStyles: Record<Priority, string> = {
@@ -10,7 +10,7 @@ const priorityStyles: Record<Priority, string> = {
 };
 
 const statusStyles: Record<Status, string> = {
-  backlog: "bg-muted text-muted-foreground",
+  todo: "bg-muted text-muted-foreground",
   in_progress: "bg-info/10 text-info",
   review: "bg-warning/15 text-warning",
   done: "bg-success/15 text-success",

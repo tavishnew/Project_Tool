@@ -24,11 +24,17 @@ export const api = {
     req('/auth/register', json({ name, email, password, role })),
   logout: () => req('/auth/logout', { method: 'POST' }),
 
+  // Password reset
+  forgotPassword: (email: string) =>
+    req('/auth/forgot-password', json({ email })),
+  resetPassword: (token: string, password: string) =>
+    req('/auth/reset-password', json({ token, password })),
+
   listProjects: () => req<{ projects: import('./types').Project[] }>('/projects'),
   getProject: (id: string) => req<{ project: import('./types').Project }>(`/projects/${id}`),
-  createProject: (name: string, description: string) =>
-    req('/projects', json({ name, description })),
-  updateProject: (id: string, data: { name?: string; description?: string }) =>
+  createProject: (name: string, description: string, color?: string) =>
+    req('/projects', json({ name, description, color })),
+  updateProject: (id: string, data: { name?: string; description?: string; color?: string; status?: import('./types').ProjectStatus }) =>
     req(`/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteProject: (id: string) => req(`/projects/${id}`, { method: 'DELETE' }),
 
@@ -42,6 +48,8 @@ export const api = {
     req(`/projects/${projectId}/members`, json({ email })),
   removeProjectMember: (projectId: string, userId: string) =>
     req(`/projects/${projectId}/members/${userId}`, { method: 'DELETE' }),
+  listProjectMembers: (projectId: string) =>
+    req<{ members: import('./types').Member[] }>(`/projects/${projectId}/members`),
 
   // Invites (admin + owner)
   createInvite: (id: string, email?: string) =>

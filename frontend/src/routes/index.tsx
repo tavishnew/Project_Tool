@@ -73,7 +73,7 @@ function Landing() {
           className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground"
         >
           Orbit gives small teams a single, quiet surface for projects, tasks, and members.
-          No plugins, no ceremony — just the flow you already run.
+          No plugins, no ceremony â€” just the flow you already run.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -177,7 +177,7 @@ function Landing() {
       <footer className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between border-t border-border px-6 py-8 text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
           <OrbitMark size={20} />
-          <span>© {new Date().getFullYear()} Orbit</span>
+          <span>â€” {new Date().getFullYear()} Orbit</span>
         </div>
         <div className="flex gap-6">
           <a href="#" className="hover:text-foreground">Privacy</a>
@@ -193,7 +193,7 @@ const features = [
   {
     icon: KanbanSquare,
     title: "Adaptive kanban",
-    desc: "Drag cards across columns with animated flow. Everything stays in place — even the ones you didn't touch.",
+    desc: "Drag cards across columns with animated flow. Everything stays in place â€” even the ones you didn't touch.",
   },
   {
     icon: Users,

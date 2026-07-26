@@ -1,5 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router';
-import { useLocation } from '@tanstack/react-router';
+import { useNavigate, useLocation } from '@tanstack/react-router';
 import {
   Sidebar,
   SidebarContent,
@@ -17,15 +16,15 @@ import {
   KanbanSquare,
   Settings,
   Users,
-  Sparkles,
   LogOut,
   FolderKanban,
 } from "lucide-react";
 import { OrbitMark } from "./orbit-mark";
 import { useAuth } from "@/auth";
 import { api } from "@/api";
+import type { Project } from "@/types";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/Toast";
+import { useToast } from "@/components/ui/toast";
 import * as React from "react";
 
 export function AppSidebar() {
@@ -34,7 +33,7 @@ export function AppSidebar() {
   const { user } = useAuth();
   const pathname = location.pathname;
 
-  const [projects, setProjects] = React.useState([]);
+  const [projects, setProjects] = React.useState<Project[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -69,16 +68,20 @@ export function AppSidebar() {
       console.error("Logout failed", err);
       notify("Failed to sign out", "error");
     }
-    navigate("/", { replace: true });
+    navigate({ to: "/", replace: true });
+  };
+
+  const handleNavigate = (to: string) => {
+    navigate({ to, replace: true });
   };
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="offcanvas">
       <SidebarHeader className="border-b border-sidebar-border">
-        <Link to="/" className="flex items-center gap-2 px-2 py-1.5">
+        <button className="flex items-center gap-2 px-2 py-1.5 w-full text-left" onClick={() => handleNavigate("/app")}>
           <OrbitMark size={26} />
           <span className="font-display text-lg font-bold tracking-tight">Orbit</span>
-        </Link>
+        </button>
       </SidebarHeader>
 
       <SidebarContent>
@@ -87,19 +90,15 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === "/projects"}>
-                  <Link to="/projects">
-                    <LayoutGrid />
-                    <span>Dashboard</span>
-                  </Link>
+                <SidebarMenuButton isActive={isActive("/app")} onClick={() => handleNavigate("/app")}>
+                  <LayoutGrid />
+                  <span>Dashboard</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === "/members"}>
-                  <Link to="/members">
-                    <Users />
-                    <span>Members</span>
-                  </Link>
+                <SidebarMenuButton isActive={isActive("/app/members")} onClick={() => handleNavigate("/app/members")}>
+                  <Users />
+                  <span>Members</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -114,7 +113,7 @@ export function AppSidebar() {
                 <>
                   {Array.from({ length: 3 }).map((_, i) => (
                     <SidebarMenuItem key={i}>
-                      <SidebarMenuButton asChild>
+                      <SidebarMenuButton>
                         <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: "gray-200" }} />
                         <span className="animate-pulse">Loading project...</span>
                       </SidebarMenuButton>
@@ -125,16 +124,14 @@ export function AppSidebar() {
                 projects.map((p) => (
                   <SidebarMenuItem key={p.id}>
                     <SidebarMenuButton
-                      asChild
-                      isActive={isActive(`/projects/${p.id}`)}
+                      isActive={isActive(`/app/projects/${p.id}`)}
+                      onClick={() => handleNavigate(`/app/projects/${p.id}`)}
                     >
-                      <Link to={`/projects/${p.id}`}>
-                        <span
-                          className="h-2 w-2 shrink-0 rounded-full"
-                          style={{ backgroundColor: p.color }}
-                        />
-                        <span className="truncate">{p.name}</span>
-                      </Link>
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: p.color }}
+                      />
+                      <span className="truncate">{p.name}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))
@@ -143,37 +140,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Discover</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Sparkles />
-                  <span>What's new</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <FolderKanban />
-                  <span>Templates</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <KanbanSquare />
-                  <span>Roadmap</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Settings />
-                  <span>Preferences</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">

@@ -11,9 +11,9 @@ import { ArrowRight } from "lucide-react";
 export const Route = createFileRoute("/register")({
   head: () => ({
     meta: [
-      { title: "Create your workspace — Orbit" },
+      { title: "Create your workspace â€” Orbit" },
       { name: "description", content: "Spin up a new Orbit workspace in seconds." },
-      { property: "og:title", content: "Create your workspace — Orbit" },
+      { property: "og:title", content: "Create your workspace â€” Orbit" },
       { property: "og:description", content: "Spin up a new Orbit workspace in seconds." },
     ],
   }),
@@ -85,7 +85,7 @@ function RegisterPage() {
           />
         </div>
         <Button type="submit" size="lg" className="w-full rounded-full" disabled={loading}>
-          {loading ? "Creating…" : <><span>Create workspace</span><ArrowRight className="ml-2 h-4 w-4" /></>}
+          {loading ? "Creating..." : <><span>Create workspace</span><ArrowRight className="ml-2 h-4 w-4" /></>}
         </Button>
         <p className="pt-2 text-center text-sm text-muted-foreground">
           Already have one?{" "}
