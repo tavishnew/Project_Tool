@@ -15,3 +15,4 @@ export { NewProjectDialog as newProjectDialog } from "./new-project-dialog";
 export { NewTaskDialog } from "./new-task-dialog";
 export { TaskDialog } from "./task-dialog";
 export { DashboardSkeleton } from "./dashboard-skeleton";
+export { StatusDot } from "./status-dot";

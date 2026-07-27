@@ -12,8 +12,18 @@ export function ProgressRing({
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(1, value));
+  const percent = Math.round(pct * 100);
   return (
-    <svg width={size} height={size} className="shrink-0">
+    <svg
+      width={size}
+      height={size}
+      className="shrink-0"
+      role="progressbar"
+      aria-valuenow={percent}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={`${percent}% complete`}
+    >
       <circle
         cx={size / 2}
         cy={size / 2}
@@ -43,7 +53,7 @@ export function ProgressRing({
         className="fill-foreground"
         style={{ fontSize: size * 0.26, fontWeight: 600, fontFamily: "var(--font-display)" }}
       >
-        {Math.round(pct * 100)}
+        {percent}%
       </text>
     </svg>
   );

@@ -8,6 +8,7 @@ import { MemberAvatar } from "@/components/orbit/member-avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskDialog } from "@/components/orbit/task-dialog";
+import { StatusDot } from "@/components/orbit/status-dot";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -18,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import type { Task, TaskStatus, TaskPriority } from "@/types";
+import { STATUS_LABELS, type Task, type TaskStatus } from "@/types";
 
 export const Route = createFileRoute("/app/projects/$id/")({
   component: BoardPage,
@@ -26,11 +27,11 @@ export const Route = createFileRoute("/app/projects/$id/")({
 
 const STATUS_KEYS: TaskStatus[] = ["todo", "in_progress", "review", "done"];
 
-const statusConfig: Record<TaskStatus, { label: string; dot: string }> = {
-  todo: { label: "Backlog", dot: "bg-muted-foreground/40" },
-  in_progress: { label: "In Progress", dot: "bg-info" },
-  review: { label: "In Review", dot: "bg-warning" },
-  done: { label: "Done", dot: "bg-success" },
+const statusConfig: Record<TaskStatus, { label: string }> = {
+  todo: { label: "Backlog" },
+  in_progress: { label: "In Progress" },
+  review: { label: "In Review" },
+  done: { label: "Done" },
 };
 
 function BoardPage() {
@@ -139,8 +140,9 @@ function BoardPage() {
     <>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {grouped.map(({ status, items }) => (
-          <div
+          <section
             key={status}
+            aria-label={`${statusConfig[status].label} column`}
             onDragOver={(e) => { e.preventDefault(); setDragOver(status); }}
             onDragLeave={() => setDragOver((s) => (s === status ? null : s))}
             onDrop={(e) => onDrop(e, status)}
@@ -151,13 +153,17 @@ function BoardPage() {
           >
             <div className="mb-3 flex items-center justify-between px-1">
               <div className="flex items-center gap-2">
-                <span className={cn("h-2 w-2 rounded-full", statusConfig[status].dot)} />
+                <StatusDot status={status} />
                 <span className="text-sm font-semibold">{statusConfig[status].label}</span>
                 <span className="rounded-full bg-muted px-1.5 text-[11px] font-medium text-muted-foreground">
                   {items.length}
                 </span>
               </div>
-              <button className="rounded-md p-1 text-muted-foreground hover:bg-muted" onClick={() => setAddingIn(status)}>
+              <button
+                aria-label={`Add task to ${statusConfig[status].label}`}
+                className="rounded-md p-1 text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                onClick={() => setAddingIn(status)}
+              >
                 <Plus className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -206,7 +212,7 @@ function BoardPage() {
                 </button>
               )}
             </div>
-          </div>
+          </section>
         ))}
       </div>
 
@@ -271,13 +277,28 @@ function TaskCard({
       draggable
       onDragStart={(e) => onDragStart(e as unknown as React.DragEvent, task.id)}
       onClick={onOpen}
-      className="cursor-grab rounded-lg border border-border bg-card p-3 shadow-[0_1px_0_oklch(0.93_0.005_60)] transition-shadow hover:shadow-md active:cursor-grabbing"
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`${task.title} — ${STATUS_LABELS[task.status]}`}
+      className="cursor-grab rounded-lg border border-border bg-card p-3 shadow-[0_1px_0_oklch(0.93_0.005_60)] transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
     >
       <div className="mb-2 flex items-start justify-between gap-2">
         <p className="text-sm font-medium leading-snug">{task.title}</p>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="rounded-md p-1 text-muted-foreground hover:bg-muted">
+            <button
+              aria-label="Task actions"
+              className="rounded-md p-1 text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
               <MoreHorizontal className="h-4 w-4" />
             </button>
           </DropdownMenuTrigger>
@@ -300,7 +321,13 @@ function TaskCard({
         </DropdownMenu>
       </div>
       <div className="flex items-center justify-between">
-        <PriorityBadge value={task.priority as any} />
+        <div className="flex items-center gap-2">
+          <PriorityBadge value={task.priority as any} />
+          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+            <StatusDot status={task.status} className="h-1.5 w-1.5" />
+            {STATUS_LABELS[task.status]}
+          </span>
+        </div>
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
           {task.due_date && (
             <span className="inline-flex items-center gap-1">

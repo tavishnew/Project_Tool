@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { api } from "@/api";
+import { formatDistanceToNowStrict } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, FolderKanban, Clock, CheckCircle2, Users, FileText } from "lucide-react";
@@ -9,61 +8,27 @@ import { ProgressRing } from "@/components/orbit/progress-ring";
 import { MemberStack } from "@/components/orbit/member-avatar";
 import { SpotlightCard } from "@/components/orbit/spotlight-card";
 import { NewTaskDialog } from "@/components/orbit/new-task-dialog";
-import type { Project, Task, Member } from "@/types";
+import { DashboardSkeleton } from "@/components/orbit/dashboard-skeleton";
+import { StatusDot } from "@/components/orbit/status-dot";
+import { useProjectsOverview } from "@/hooks/use-projects-overview";
+import { STATUS_LABELS } from "@/types";
 import { useAuth } from "@/auth";
 
 export const Route = createFileRoute("/app/")({
   component: DashboardPage,
 });
 
+function relativeTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return `${formatDistanceToNowStrict(date, { addSuffix: false })} ago`;
+}
+
 function DashboardPage() {
   const { user } = useAuth();
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
-  
-  // Fetch projects for stats and recent projects
-  const { data: projectsData, isLoading: projectsLoading } = useQuery({
-    queryKey: ["projects"],
-    queryFn: () => api.listProjects(),
-  });
 
-  // Fetch all tasks for stats
-  const { data: tasksData, isLoading: tasksLoading } = useQuery({
-    queryKey: ["tasks", projectsData?.projects?.map((p: Project) => p.id) || []],
-    queryFn: async () => {
-      const projects = projectsData?.projects || [];
-      if (projects.length === 0) return { tasks: [] as Task[] };
-      const tasksPromises = projects.map((p: Project) => api.listTasks(p.id));
-      const results = await Promise.all(tasksPromises);
-      return { tasks: results.flatMap((r) => r.tasks || []) as Task[] };
-    },
-    enabled: !!projectsData?.projects?.length,
-  });
-
-  // Fetch members for member avatars
-  const { data: membersData, isLoading: membersLoading } = useQuery({
-    queryKey: ["members"],
-    queryFn: async () => {
-      const response = await api.listMembers();
-      return response.members || [];
-    },
-  });
-
-  const projects = projectsData?.projects || [];
-  const tasks = tasksData?.tasks || [];
-  const members = membersData || [];
-
-  // Stats
-  const inProgress = tasks.filter((t) => t.status === "in_progress").length;
-  const done = tasks.filter((t) => t.status === "done").length;
-  const openTasks = tasks.length - done;
-  const totalProjects = projects.length;
-
-  const stats = [
-    { label: "Projects", value: totalProjects, icon: FolderKanban, color: "text-primary" },
-    { label: "Open tasks", value: openTasks, icon: Clock, color: "text-warning" },
-    { label: "In progress", value: inProgress, icon: FolderKanban, color: "text-info" },
-    { label: "Completed", value: done, icon: CheckCircle2, color: "text-success" },
-  ];
+  const { projects, tasks, members: membersWithColors, stats, isLoading } = useProjectsOverview();
 
   // Recent projects (last 4)
   const recentProjects = projects.slice(0, 4);
@@ -78,36 +43,8 @@ function DashboardPage() {
     .filter((t) => t.status === "todo")
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-  // Generate member colors
-  const membersWithColors = members.map((member, index) => ({
-    ...member,
-    color: member.color || generateMemberColor(member.name, index),
-  }));
-
-  function generateMemberColor(name: string, fallbackIndex: number) {
-    const colors = ["#ff5a4e", "#f59e0b", "#10b981", "#6366f1", "#ec4899", "#0ea5e9"];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-  }
-
-  if (projectsLoading || tasksLoading || membersLoading) {
-    return (
-      <div className="space-y-8">
-        <header>
-          <p className="text-sm text-muted-foreground">Loading…</p>
-        </header>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="pt-6">Loading…</CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
+  if (isLoading) {
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -255,25 +192,18 @@ function DashboardPage() {
                       className="flex items-center justify-between rounded-xl border border-border bg-card p-3 hover:bg-card/80 transition-colors"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <span
-                          className={`h-2 w-2 rounded-full flex-shrink-0 ${
-                            task.status === "done"
-                              ? "bg-success"
-                              : task.status === "in_progress"
-                              ? "bg-info"
-                              : task.status === "review"
-                              ? "bg-warning"
-                              : "bg-muted-foreground/40"
-                          }`}
-                        />
+                        <StatusDot status={task.status} />
                         <div className="min-w-0">
                           <p className="text-sm font-medium truncate">{task.title}</p>
                           <p className="text-xs text-muted-foreground truncate">
-                            {project?.name ?? "Unknown project"}
+                            {project?.name ?? "Unknown project"} · {STATUS_LABELS[task.status]}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                        <time dateTime={task.created_at} className="whitespace-nowrap">
+                          {relativeTime(task.created_at)}
+                        </time>
                         {assignee && (
                           <div
                             className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[9px] font-semibold text-primary"
@@ -291,7 +221,10 @@ function DashboardPage() {
 
           {/* Backlog */}
           <div>
-            <h2 className="font-display text-xl font-semibold">Backlog</h2>
+            <h2 className="font-display text-xl font-semibold">Backlog (all projects)</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Unstarted tasks across every project — open a project board to work them.
+            </p>
             {backlogTasks.length === 0 ? (
               <Card className="border-dashed border-border bg-card/70 mt-4">
                 <CardContent className="py-8 text-center">
@@ -310,13 +243,18 @@ function DashboardPage() {
                       className="flex items-center justify-between rounded-xl border border-border bg-card p-3 hover:bg-card/80 transition-colors"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <span className="h-2 w-2 rounded-full flex-shrink-0 bg-muted-foreground/40" />
+                        <StatusDot status={task.status} />
                         <div className="min-w-0">
                           <p className="text-sm font-medium truncate">{task.title}</p>
-                          <p className="text-xs text-muted-foreground truncate">{project?.name ?? "Unknown project"}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {project?.name ?? "Unknown project"} · {STATUS_LABELS[task.status]}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                        <time dateTime={task.created_at} className="whitespace-nowrap">
+                          {relativeTime(task.created_at)}
+                        </time>
                         {assignee && (
                           <div
                             className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[9px] font-semibold text-primary"
