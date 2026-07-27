@@ -1,0 +1,173 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { formatDistanceToNowStrict } from "date-fns";
+import { api } from "@/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger, 
+  DropdownMenuSeparator, 
+  DropdownMenuLabel 
+} from "@/components/ui/dropdown-menu";
+import { Plus, FolderKanban, Clock, CheckCircle2, Users, FileText, Zap, Archive } from "lucide-react";
+import { ProgressRing } from "@/components/orbit/progress-ring";
+import { MemberStack } from "@/components/orbit/member-avatar";
+import { SpotlightCard } from "@/components/orbit/spotlight-card";
+import { NewTaskDialog } from "@/components/orbit/new-task-dialog";
+import type { Project, Task, Member, ProjectStatus } from "@/types";
+import { useAuth } from "@/auth";
+import { cn } from "@/lib/utils";
+import { useProjectsOverview } from "@/hooks/use-projects-overview";
+import { DashboardSkeleton } from "@/components/orbit/dashboard-skeleton";
+
+export const Route = createFileRoute("/app/")({
+  component: DashboardPage,
+});
+
+function DashboardPage() {
+  const { user } = useAuth();
+  const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  
+  const {
+    projects,
+    tasks,
+    members,
+    membersWithColors,
+    stats,
+    recentProjects,
+    recentTasks,
+    backlogTasks,
+    isLoading,
+  } = useProjectsOverview();
+
+  // Status config
+  const statusConfig: Record<ProjectStatus, { label: string; icon: React.ReactNode; variant: "default" | "secondary" | "destructive" | "outline" | "success" }> = {
+    active: { label: "Active", icon: <Zap className="h-3 w-3" />, variant: "default" },
+    completed: { label: "Completed", icon: <CheckCircle2 className="h-3 w-3" />, variant: "success" },
+    archived: { label: "Archived", icon: <Archive className="h-3 w-3" />, variant: "secondary" },
+  };
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
+
+  return (
+    <div className="space-y-8">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-sm text-muted-foreground">
+            {new Date().toLocaleDateString(undefined, {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+          <h1 className="mt-1 font-display text-3xl font-bold tracking-tight md:text-4xl">
+            Good to see you, {user?.name?.split(" ")[0] ?? "friend"}.
+          </h1>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" className="rounded-full" onClick={() => setCreateTaskOpen(true)}>
+            <FileText className="mr-2 h-4 w-4" /> New task
+          </Button>
+          <Link to="/app/projects/new">
+            <Button size="lg" className="rounded-full">
+              <Plus className="mr-2 h-4 w-4" /> New project
+            </Button>
+          </Link>
+        </div>
+      </header>
+
+      {/* Stats Row */}
+      <section aria-label="Stats" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: "Projects", value: stats.totalProjects, icon: FolderKanban, color: "text-primary" },
+          { label: "Open tasks", value: stats.openTasks, icon: Clock, color: "text-warning" },
+          { label: "In progress", value: stats.inProgress, icon: FolderKanban, color: "text-info" },
+          { label: "Completed", value: stats.completed, icon: CheckCircle2, color: "text-success" },
+        ].map((s, i) => (
+          <Card key={s.label} className="border-border bg-card/80 backdrop-blur-sm">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{s.label}</span>
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                  <s.icon className={`h-4 w-4 ${s.color}`} />
+                </span>
+              </div>
+              <div className="mt-3 font-display text-3xl font-bold tracking-tight">{s.value}</div>
+            </CardContent>
+          </Card>
+        ))}
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Recent Projects */}
+        <section className="lg:col-span-2">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-display text-xl font-semibold">Your projects</h2>
+            <Link to="/app/projects" className="text-sm text-muted-foreground hover:text-foreground">
+              View all →
+            </Link>
+          </div>
+          {recentProjects.length === 0 ? (
+            <Card className="border-dashed border-border bg-card/70">
+              <CardContent className="pt-16 pb-16 text-center">
+                <FolderKanban className="mx-auto h-8 w-8 text-muted-foreground" />
+                <h3 className="mt-3 font-display text-lg font-semibold">No projects yet</h3>
+                <p className="mt-1 text-sm text-muted-foreground">Kick things off with your first project.</p>
+                <Link to="/app/projects/new">
+                  <Button className="mt-6 rounded-full">
+                    <Plus className="mr-2 h-4 w-4" /> Create project
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {recentProjects.map((project, i) => {
+                const pTasks = tasks.filter((t) => t.project_id === project.id);
+                const doneCount = pTasks.filter((t) => t.status === "done").length;
+                const pct = pTasks.length ? doneCount / pTasks.length : 0;
+                const pMembers = membersWithColors.filter((m) =>
+                  project.member_ids?.includes(m.id)
+                );
+
+                const projectStatus = project.status || "active";
+                const StatusBadge = statusConfig[projectStatus];
+                const isOwner = user && project.owner_id === user.id;
+                const canMarkComplete = projectStatus !== "completed" && pTasks.length > 0 && doneCount === pTasks.length;
+
+                return (
+                  <Link to={`/app/projects/${project.id}`} key={project.id}>
+                    <SpotlightCard className="h-full relative">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="mb-3 flex items-center gap-2">
+                            <span
+                              className="h-2.5 w-2.5 rounded-full"
+                              style={{ backgroundColor: project.color }}
+                            />
+                            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                              Project
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <h3 className="font-display text-lg font-semibold truncate">{project.name}</h3>
+                            <Badge variant={StatusBadge.variant} className="gap-1.5">
+                              {StatusBadge.icon}
+                              {StatusBadge.label}
+                            </Badge>
+                            {canMarkComplete && isOwner && (
+                              <Badge
+                                variant="outline"
+                                className="gap-1.5 text-green-600 bg-green-50 border-green-200 cursor-pointer hover:bg-green-100"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  console.log("Mark complete:", project.id);
+                                }}
+                             
