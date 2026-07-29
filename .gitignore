@@ -2,3 +2,5 @@
 node_modules/
 
 oribit_redsign/.workspace/
+
+.worktrees/

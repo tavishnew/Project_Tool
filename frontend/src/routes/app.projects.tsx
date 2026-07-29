@@ -17,9 +17,14 @@ import { ProgressRing } from '@/components/orbit/progress-ring';
 import { MemberStack } from '@/components/orbit/member-avatar';
 import { SpotlightCard } from '@/components/orbit/spotlight-card';
 import { NewProjectDialog } from '@/components/orbit/new-project-dialog';
+<<<<<<< HEAD
 import { DashboardSkeleton } from '@/components/orbit/dashboard-skeleton';
 import { useProjectsOverview } from '@/hooks/use-projects-overview';
 import type { Project, ProjectStatus } from '@/types';
+=======
+import { useProjectsOverview } from '@/hooks/use-projects-overview';
+import type { Member } from '@/types';
+>>>>>>> c114262 (api fixed)
 
 export const Route = createFileRoute('/app/projects')({
   component: ProjectsPage,
@@ -33,12 +38,30 @@ const PAGE_SIZE = 12;
 function ProjectsPage() {
   const queryClient = useQueryClient();
 
+<<<<<<< HEAD
+=======
+  const {
+    projects,
+    tasks,
+    members,
+    stats,
+    isLoading,
+    isProjectsLoading,
+    isTasksLoading,
+    isMembersLoading,
+    projectsError,
+    tasksError,
+    membersError
+  } = useProjectsOverview();
+
+>>>>>>> c114262 (api fixed)
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sortKey, setSortKey] = useState<SortKey>('recent');
   const [page, setPage] = useState(1);
 
+<<<<<<< HEAD
   const { projects, tasks, members, stats, isLoading, error } = useProjectsOverview();
 
   const progressOf = (project: Project) => {
@@ -72,6 +95,11 @@ function ProjectsPage() {
 
   if (isLoading) {
     return <DashboardSkeleton variant="projects" />;
+=======
+  // Handle loading and error states
+  if (isLoading) {
+    return <div className="flex min-h-[20rem] items-center justify-center">Loading...</div>;
+>>>>>>> c114262 (api fixed)
   }
 
   if (error) {
@@ -92,9 +120,17 @@ function ProjectsPage() {
     <div className="space-y-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
+<<<<<<< HEAD
           <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Projects</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {projects.length} {projects.length === 1 ? 'project' : 'projects'} in this workspace
+=======
+          <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
+            Projects
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {projects.length} total projects
+>>>>>>> c114262 (api fixed)
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -260,8 +296,8 @@ function ProjectsPage() {
         )}
       </section>
 
-      <NewProjectDialog 
-        open={open} 
+      <NewProjectDialog
+        open={open}
         onOpenChange={setOpen}
         onCreateProject={handleCreateProject}
       />

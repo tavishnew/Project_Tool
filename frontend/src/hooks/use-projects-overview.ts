@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useQuery } from "@tanstack/react-query";
 import { FolderKanban, Clock, CheckCircle2 } from "lucide-react";
 import { api } from "@/api";
@@ -13,6 +14,11 @@ export function generateMemberColor(name: string, fallbackIndex: number) {
   }
   return MEMBER_COLORS[Math.abs(hash) % MEMBER_COLORS.length];
 }
+=======
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/api';
+import type { Project, Task, Member } from '@/types';
+>>>>>>> c114262 (api fixed)
 
 export function useProjectsOverview() {
   const {
@@ -24,6 +30,7 @@ export function useProjectsOverview() {
     queryFn: () => api.listProjects(),
   });
 
+<<<<<<< HEAD
   const projects: Project[] = projectsData?.projects ?? [];
 
   const {
@@ -36,6 +43,17 @@ export function useProjectsOverview() {
       if (projects.length === 0) return { tasks: [] as Task[] };
       const results = await Promise.all(projects.map((p) => api.listTasks(p.id)));
       return { tasks: results.flatMap((r) => r.tasks ?? []) };
+=======
+  // Fetch all tasks for the projects (dependent on projects)
+  const { data: tasksData, isLoading: isTasksLoading, error: tasksError } = useQuery({
+    queryKey: ['tasks', projectsData?.projects?.map((p: Project) => p.id) ?? []],
+    queryFn: async () => {
+      const projects = projectsData?.projects ?? [];
+      if (projects.length === 0) return { tasks: [] as Task[] };
+      const tasksPromises = projects.map((p: Project) => api.listTasks(p.id));
+      const results = await Promise.all(tasksPromises);
+      return { tasks: results.flatMap((r) => r.tasks ?? []) as Task[] };
+>>>>>>> c114262 (api fixed)
     },
     enabled: !!projects.length,
   });
@@ -53,8 +71,13 @@ export function useProjectsOverview() {
     },
   });
 
+<<<<<<< HEAD
   const tasks: Task[] = tasksData?.tasks ?? [];
   const members: Member[] = (membersData ?? []).map((member, index) => ({
+=======
+  // Process members to add colors
+  const membersWithColors: Member[] = (membersData ?? []).map((member, index) => ({
+>>>>>>> c114262 (api fixed)
     ...member,
     color: member.color || generateMemberColor(member.name, index),
   }));
@@ -71,11 +94,27 @@ export function useProjectsOverview() {
   ];
 =======
   // Calculate stats
-  const inProgress = tasks.filter(t => t.status === 'in_progress').length;
-  const done = tasks.filter(t => t.status === 'done').length;
+  const inProgress = tasks.filter((t) => t.status === 'in_progress').length;
+  const done = tasks.filter((t) => t.status === 'done').length;
   const openTasks = tasks.length - done;
   const totalProjects = projects.length;
 >>>>>>> fe93335 (feat: complete useProjectsOverview hook for Task 1)
+
+  const stats = [
+    { label: 'Projects', value: totalProjects, icon: 'FolderKanban', color: 'text-primary' },
+    { label: 'Open tasks', value: openTasks, icon: 'Clock', color: 'text-warning' },
+    { label: 'In progress', value: inProgress, icon: 'FolderKanban', color: 'text-info' },
+    { label: 'Completed', value: done, icon: 'CheckCircle2', color: 'text-success' },
+  ];
+
+  function generateMemberColor(name: string, fallbackIndex: number) {
+    const colors = ['#ff5a4e', '#f59e0b', '#10b981', '#6366f1', '#ec4899', '#0ea5e9'];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  }
 
   return {
     projects,
@@ -89,21 +128,17 @@ export function useProjectsOverview() {
 }
 =======
     members: membersWithColors,
-    isLoading,
-    stats: [
-      { label: 'Projects', value: totalProjects, icon: 'FolderKanban', color: 'text-primary' },
-      { label: 'Open tasks', value: openTasks, icon: 'Clock', color: 'text-warning' },
-      { label: 'In progress', value: inProgress, icon: 'FolderKanban', color: 'text-info' },
-      { label: 'Completed', value: done, icon: 'CheckCircle2', color: 'text-success' },
-    ],
-    recentProjects: projects.slice(0, 4),
-    recentTasks: [...tasks]
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 5),
-    backlogTasks: [...tasks]
-      .filter((t) => t.status === 'todo')
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    generateMemberColor,
+    stats,
+    isLoading: projectsLoading || tasksLoading || membersLoading,
+    isProjectsLoading,
+    isTasksLoading,
+    isMembersLoading,
+    projectsError,
+    tasksError,
+    membersError,
   };
+<<<<<<< HEAD
 }
 
 function generateMemberColor(name: string, fallbackIndex: number) {
@@ -115,3 +150,6 @@ function generateMemberColor(name: string, fallbackIndex: number) {
   return colors[Math.abs(hash) % colors.length];
 }
 >>>>>>> fe93335 (feat: complete useProjectsOverview hook for Task 1)
+=======
+}
+>>>>>>> c114262 (api fixed)

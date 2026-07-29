@@ -8,10 +8,15 @@ import { ProgressRing } from "@/components/orbit/progress-ring";
 import { MemberStack } from "@/components/orbit/member-avatar";
 import { SpotlightCard } from "@/components/orbit/spotlight-card";
 import { NewTaskDialog } from "@/components/orbit/new-task-dialog";
+<<<<<<< HEAD
 import { DashboardSkeleton } from "@/components/orbit/dashboard-skeleton";
 import { StatusDot } from "@/components/orbit/status-dot";
 import { useProjectsOverview } from "@/hooks/use-projects-overview";
 import { STATUS_LABELS } from "@/types";
+=======
+import { useProjectsOverview } from "@/hooks/use-projects-overview";
+import type { Project, Task, Member } from "@/types";
+>>>>>>> c114262 (api fixed)
 import { useAuth } from "@/auth";
 
 export const Route = createFileRoute("/app/")({
@@ -27,8 +32,19 @@ function relativeTime(value: string) {
 function DashboardPage() {
   const { user } = useAuth();
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
+<<<<<<< HEAD
 
   const { projects, tasks, members: membersWithColors, stats, isLoading } = useProjectsOverview();
+=======
+  const {
+    projects,
+    tasks,
+    members,
+    stats,
+    isLoading,
+    generateMemberColor,
+  } = useProjectsOverview();
+>>>>>>> c114262 (api fixed)
 
   // Recent projects (last 4)
   const recentProjects = projects.slice(0, 4);
@@ -44,7 +60,24 @@ function DashboardPage() {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   if (isLoading) {
+<<<<<<< HEAD
     return <DashboardSkeleton />;
+=======
+    return (
+      <div className="space-y-8">
+        <header>
+          <p className="text-sm text-muted-foreground">Loading…</p>
+        </header>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="pt-6">Loading…</CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+>>>>>>> c114262 (api fixed)
   }
 
   return (
@@ -119,7 +152,7 @@ function DashboardPage() {
                 const pTasks = tasks.filter((t) => t.project_id === project.id);
                 const doneCount = pTasks.filter((t) => t.status === "done").length;
                 const pct = pTasks.length ? doneCount / pTasks.length : 0;
-                const pMembers = membersWithColors.filter((m) =>
+                const pMembers = members.filter((m) =>
                   project.member_ids?.includes(m.id)
                 );
 
@@ -157,12 +190,75 @@ function DashboardPage() {
                       </div>
                     </SpotlightCard>
                   </Link>
-                );
-              })}
-            </div>
-          )}
-        </section>
+                })
+              </div>
+            )}
+          </section>
 
+          {/* Recent Tasks & Quick Actions */}
+          <section className="space-y-6">
+            <div>
+              <h2 className="font-display text-xl font-semibold">Recent tasks</h2>
+              {recentTasks.length === 0 ? (
+                <Card className="border-dashed border-border bg-card/70 mt-4">
+                  <CardContent className="py-12 text-center">
+                    <Clock className="mx-auto h-8 w-8 text-muted-foreground" />
+                    <h3 className="mt-3 font-display text-lg font-semibold">No tasks yet</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">Create a project and add your first task.</p>
+                    <Link to="/app/projects/new">
+                      <Button className="mt-4 rounded-full">
+                        <Plus className="mr-2 h-4 w-4" /> Create project
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="mt-4 space-y-2">
+                  {recentTasks.map((task) => {
+                    const project = projects.find((p) => p.id === task.project_id);
+                    const assignee = members.find((m) => m.id === task.assignee_id);
+                    return (
+                      <Link
+                        key={task.id}
+                        to={`/app/projects/${project?.id}`}
+                        className="flex items-center justify-between rounded-xl border border-border bg-card p-3 hover:bg-card/80 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span
+                            className={`h-2 w-2 rounded-full flex-shrink-0 ${
+                              task.status === "done"
+                                ? "bg-success"
+                                : task.status === "in_progress"
+                                ? "bg-info"
+                                : task.status === "review"
+                                ? "bg-warning"
+                                : "bg-muted-foreground/40"
+                            }`}
+                          />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{task.title}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {project?.name ?? "Unknown project"}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                            {assignee && (
+                              <div
+                                className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[9px] font-semibold text-primary"
+                              >
+                                {assignee.name[0]}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+<<<<<<< HEAD
         {/* Recent Tasks & Quick Actions */}
         <section className="space-y-6">
           <div>
@@ -269,46 +365,90 @@ function DashboardPage() {
               </div>
             )}
           </div>
+=======
+            {/* Backlog */}
+            <div>
+              <h2 className="font-display text-xl font-semibold">Backlog</h2>
+              {backlogTasks.length === 0 ? (
+                <Card className="border-dashed border-border bg-card/70 mt-4">
+                  <CardContent className="py-8 text-center">
+                    <p className="text-sm text-muted-foreground">No backlog tasks. Create a task and set to "To Do" status.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="mt-4 space-y-2">
+                  {backlogTasks.map((task) => {
+                    const project = projects.find((p) => p.id === task.project_id);
+                    const assignee = members.find((m) => m.id === task.assignee_id);
+                    return (
+                      <Link
+                        key={task.id}
+                        to={`/app/projects/${project?.id}`}
+                        className="flex items-center justify-between rounded-xl border border-border bg-card p-3 hover:bg-card/80 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="h-2 w-2 rounded-full flex-shrink-0 bg-muted-foreground/40" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{task.title}</p>
+                            <p className="text-xs text-muted-foreground truncate">{project?.name ?? "Unknown project"}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                          {assignee && (
+                            <div
+                              className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[9px] font-semibold text-primary"
+                            >
+                              {assignee.name[0]}
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+>>>>>>> c114262 (api fixed)
 
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quick actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-start gap-3" onClick={() => setCreateTaskOpen(true)}>
-                <FileText className="h-4 w-4" />
-                <span>Create new task</span>
-              </Button>
-              <Link to="/app/projects/new">
-                <Button variant="outline" className="w-full justify-start gap-3">
-                  <FolderKanban className="h-4 w-4" />
-                  <span>Create new project</span>
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Quick actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button variant="outline" className="w-full justify-start gap-3" onClick={() => setCreateTaskOpen(true)}>
+                  <FileText className="h-4 w-4" />
+                  <span>Create new task</span>
                 </Button>
-              </Link>
-              <Link to="/app/projects">
-                <Button variant="outline" className="w-full justify-start gap-3">
-                  <FolderKanban className="h-4 w-4" />
-                  <span>View all projects</span>
-                </Button>
-              </Link>
-              <Link to="/app/members">
-                <Button variant="outline" className="w-full justify-start gap-3">
-                  <Users className="h-4 w-4" />
-                  <span>Manage members</span>
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </section>
+                <Link to="/app/projects/new">
+                  <Button variant="outline" className="w-full justify-start gap-3">
+                    <FolderKanban className="h-4 w-4" />
+                    <span>Create new project</span>
+                  </Button>
+                </Link>
+                <Link to="/app/projects">
+                  <Button variant="outline" className="w-full justify-start gap-3">
+                    <FolderKanban className="h-4 w-4" />
+                    <span>View all projects</span>
+                  </Button>
+                </Link>
+                <Link to="/app/members">
+                  <Button variant="outline" className="w-full justify-start gap-3">
+                    <Users className="h-4 w-4" />
+                    <span>Manage members</span>
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </section>
+        </div>
+
+        <NewTaskDialog
+          open={createTaskOpen}
+          onOpenChange={setCreateTaskOpen}
+          projects={projects}
+          members={members}
+        />
       </div>
-
-      <NewTaskDialog
-        open={createTaskOpen}
-        onOpenChange={setCreateTaskOpen}
-        projects={projects}
-        members={membersWithColors}
-      />
-    </div>
-  );
-}
+    );
+  }
