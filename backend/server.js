@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.js';
 import projectRoutes from './routes/projects.js';
 import taskRoutes from './routes/tasks.js';
 import memberRoutes from './routes/members.js';
+import workspaceRoutes from './routes/workspace.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -62,6 +63,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/members', memberRoutes);
+app.use('/api/workspace', workspaceRoutes);
 
 // ponytail: optional static serve for a built frontend in the same deploy.
 const dist = path.join(__dirname, '..', 'frontend', 'dist');

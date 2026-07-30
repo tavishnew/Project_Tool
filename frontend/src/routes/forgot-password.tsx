@@ -40,7 +40,7 @@ function ForgotPasswordPage() {
 
   return (
     <AuthShell title="Forgot password" subtitle="Enter your email and we'll send you a reset link.">
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4" data-testid="forgot-password-form">
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
           <div className="relative">

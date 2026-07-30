@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AuthShell } from "@/components/orbit/auth-shell";
 import { useAuth } from "@/auth";
 import { api } from "@/api";
@@ -26,6 +27,7 @@ function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"user" | "admin">("user");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,9 +36,9 @@ function RegisterPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.register(name, email, password) as { user: import("@/types").User };
+      const data = await api.register(name, email, password, role) as { user: import("@/types").User };
       setUser(data.user);
-      navigate({ to: "/app/projects" });
+      navigate({ to: "/app" });
     } catch {
       setError("Registration failed. Email may already be in use.");
     } finally {
@@ -46,7 +48,7 @@ function RegisterPage() {
 
   return (
     <AuthShell title="Create your workspace" subtitle="It takes about ten seconds. Really.">
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className="space-y-4" data-testid="register-form">
         {error && (
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
             {error}
@@ -83,6 +85,18 @@ function RegisterPage() {
             required
             minLength={4}
           />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="role">Role</Label>
+          <Select value={role} onValueChange={(v) => setRole(v as "user" | "admin")}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="user">User — Standard access</SelectItem>
+              <SelectItem value="admin">Admin — Full workspace access</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <Button type="submit" size="lg" className="w-full rounded-full" disabled={loading}>
           {loading ? "Creating..." : <><span>Create workspace</span><ArrowRight className="ml-2 h-4 w-4" /></>}

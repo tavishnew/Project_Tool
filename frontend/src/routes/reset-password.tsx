@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -28,10 +28,57 @@ function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [validating, setValidating] = useState(true);
+  const [validToken, setValidToken] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
 
-  if (!token) {
+  // Validate token on mount
+  useEffect(() => {
+    if (!token) {
+      setValidating(false);
+      setValidToken(false);
+      return;
+    }
+
+    let cancelled = false;
+    async function validate() {
+      // token is guaranteed to exist here due to the guard above
+      try {
+        const result = await api.validateResetToken(token!);
+        if (!cancelled) {
+          setValidToken(result.valid);
+          if (result.valid && result.email) {
+            setUserEmail(result.email);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setValidToken(false);
+        }
+      } finally {
+        if (!cancelled) {
+          setValidating(false);
+        }
+      }
+    }
+    validate();
+    return () => { cancelled = true; };
+  }, [token]);
+
+  if (validating) {
     return (
-      <AuthShell title="Invalid link" subtitle="This password reset link is missing a token.">
+      <AuthShell title="Reset password" subtitle="Validating reset link...">
+        <div className="text-center text-muted-foreground">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+          <p>Validating reset link...</p>
+        </div>
+      </AuthShell>
+    );
+  }
+
+  if (!token || !validToken) {
+    return (
+      <AuthShell title="Invalid link" subtitle="This password reset link is invalid or has expired.">
         <div className="text-center text-muted-foreground">
           <p className="mb-4">Please request a new password reset link.</p>
           <Link to="/forgot-password">
@@ -54,7 +101,16 @@ function ResetPasswordPage() {
     }
     setLoading(true);
     try {
-      await api.resetPassword(token!, password);
+      // Token is now in URL, not body
+      await fetch(`/api/auth/reset-password/${token!}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      }).then(res => {
+        if (!res.ok) throw new Error('Failed to reset password');
+        return res.json();
+      });
       toast.success("Password has been reset. You can now sign in.");
       navigate({ to: "/login" });
     } catch (err: any) {
@@ -66,7 +122,12 @@ function ResetPasswordPage() {
 
   return (
     <AuthShell title="Reset password" subtitle="Enter your new password below.">
-      <form onSubmit={onSubmit} className="space-y-4">
+      {userEmail && (
+        <p className="text-sm text-muted-foreground text-center mb-4">
+          Resetting password for <strong className="font-medium">{userEmail}</strong>
+        </p>
+      )}
+      <form onSubmit={onSubmit} className="space-y-4" data-testid="reset-password-form">
         <div className="space-y-1.5">
           <Label htmlFor="pw">New password</Label>
           <div className="relative">

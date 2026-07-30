@@ -96,11 +96,11 @@ export function TaskDialog({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg" data-testid="task-dialog">
         <DialogHeader>
-          <DialogTitle>Task details</DialogTitle>
+          <DialogTitle>Edit task</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-4" data-testid="task-dialog-form">
           <div className="space-y-1.5">
             <Label>Title</Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />

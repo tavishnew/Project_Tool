@@ -104,7 +104,7 @@ export function NewTaskDialog({
   if (projects.length === 0) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent>
+        <DialogContent data-testid="new-task-dialog-empty">
           <DialogHeader>
             <DialogTitle>New task</DialogTitle>
             <DialogDescription>Create a project first to add tasks.</DialogDescription>
@@ -119,7 +119,7 @@ export function NewTaskDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg" data-testid="new-task-dialog">
         <DialogHeader>
           <DialogTitle>New task</DialogTitle>
           <DialogDescription>Add a task to one of your projects.</DialogDescription>

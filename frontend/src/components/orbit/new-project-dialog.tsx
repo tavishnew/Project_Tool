@@ -57,12 +57,12 @@ export function NewProjectDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent data-testid="new-project-dialog">
         <DialogHeader>
           <DialogTitle>New project</DialogTitle>
           <DialogDescription>Give it a name and a color. Members can be added later.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-4" data-testid="new-project-form">
           <div className="space-y-1.5">
             <Label htmlFor="np-name">Name</Label>
             <Input id="np-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Aurora launch" />
@@ -73,7 +73,7 @@ export function NewProjectDialog({
           </div>
           <div className="space-y-1.5">
             <Label>Color</Label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2" data-testid="color-picker">
               {COLORS.map((c) => (
                 <button
                   key={c}

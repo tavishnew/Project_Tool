@@ -58,6 +58,7 @@ export function DashboardSkeleton({
   projectCardCount = 3,
 }: DashboardSkeletonProps) {
   return (
+<<<<<<< HEAD
     <div className="space-y-8" aria-busy="true" aria-live="polite">
       <span className="sr-only">Loading…</span>
 
@@ -67,6 +68,16 @@ export function DashboardSkeleton({
       </header>
 
       <section aria-label="Stats" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+=======
+    <div className="space-y-8" data-testid="dashboard-skeleton">
+      <header className="animate-pulse" data-testid="skeleton-header">
+        <div className="h-4 w-1/4 bg-muted rounded mb-2" />
+        <div className="h-8 w-1/2 bg-muted rounded" />
+      </header>
+
+      {/* Stats Row */}
+      <section aria-label="Stats" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-testid="skeleton-stats">
+>>>>>>> 2766c08 (final updates)
         {Array.from({ length: 4 }).map((_, i) => (
           <motion.div
             key={i}
@@ -92,7 +103,12 @@ export function DashboardSkeleton({
         </section>
       ) : (
         <div className="grid gap-6 lg:grid-cols-3">
+<<<<<<< HEAD
           <section className="lg:col-span-2">
+=======
+          {/* Recent Projects / Projects Grid */}
+          <section className={projectGridColSpan} data-testid="skeleton-project-grid">
+>>>>>>> 2766c08 (final updates)
             <div className="mb-4 flex items-center justify-between">
               <div className="h-6 w-40 animate-pulse rounded bg-muted" />
               <div className="h-5 w-20 animate-pulse rounded bg-muted" />
@@ -104,7 +120,12 @@ export function DashboardSkeleton({
             </div>
           </section>
 
+<<<<<<< HEAD
           <section className="space-y-6">
+=======
+          {/* Quick Actions area placeholder */}
+          <section className="space-y-6" data-testid="skeleton-side-panel">
+>>>>>>> 2766c08 (final updates)
             <div>
               <div className="h-6 w-32 animate-pulse rounded bg-muted" />
               <div className="mt-4 space-y-2">
@@ -123,7 +144,12 @@ export function DashboardSkeleton({
               </div>
             </div>
 
+<<<<<<< HEAD
             <Card className="animate-pulse">
+=======
+            {/* Quick Actions */}
+            <Card className="animate-pulse" data-testid="skeleton-quick-actions">
+>>>>>>> 2766c08 (final updates)
               <CardHeader>
                 <div className="h-5 w-32 rounded bg-muted" />
               </CardHeader>

@@ -14,8 +14,8 @@ export function AuthShell({
   children: ReactNode;
 }) {
   return (
-    <div className="relative min-h-svh overflow-hidden bg-background lg:grid lg:grid-cols-2">
-      <div className="relative z-10 flex flex-col justify-between p-8 lg:p-12">
+    <div className="relative min-h-svh overflow-hidden bg-background lg:grid lg:grid-cols-2" data-testid="auth-shell">
+      <div className="relative z-10 flex flex-col justify-between p-8 lg:p-12" data-testid="auth-form-panel">
         <Link to="/" className="flex items-center gap-2">
           <OrbitMark />
           <span className="font-display text-lg font-bold tracking-tight">Orbit</span>
@@ -32,7 +32,7 @@ export function AuthShell({
         </motion.div>
         <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Orbit</p>
       </div>
-      <div className="relative hidden overflow-hidden bg-secondary/50 lg:block">
+      <div className="relative hidden overflow-hidden bg-secondary/50 lg:block" data-testid="auth-brand-panel">
         <AuroraBlob className="pointer-events-none absolute inset-0" />
         <div className="relative z-10 flex h-full flex-col items-center justify-center p-16 text-center">
           <div className="relative">

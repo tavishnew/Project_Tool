@@ -17,14 +17,9 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppMembersRouteImport } from './routes/app.members'
-import { Route as AppProjectsRouteImport } from './routes/app.projects'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppMembersInviteRouteImport } from './routes/app.members.invite'
-import { Route as AppProjectsIdRouteImport } from './routes/app.projects.$id'
-import { Route as AppProjectsNewRouteImport } from './routes/app.projects.new'
 import { Route as InviteTokenIndexRouteImport } from './routes/invite.$token/index'
-import { Route as AppProjectsIdIndexRouteImport } from './routes/app.projects.$id.index'
-import { Route as AppProjectsIdListRouteImport } from './routes/app.projects.$id.list'
-import { Route as AppProjectsIdSettingsRouteImport } from './routes/app.projects.$id.settings'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -66,9 +61,9 @@ const AppMembersRoute = AppMembersRouteImport.update({
   path: '/members',
   getParentRoute: () => AppRoute,
 } as any)
-const AppProjectsRoute = AppProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMembersInviteRoute = AppMembersInviteRouteImport.update({
@@ -76,35 +71,10 @@ const AppMembersInviteRoute = AppMembersInviteRouteImport.update({
   path: '/invite',
   getParentRoute: () => AppMembersRoute,
 } as any)
-const AppProjectsIdRoute = AppProjectsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AppProjectsRoute,
-} as any)
-const AppProjectsNewRoute = AppProjectsNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => AppProjectsRoute,
-} as any)
 const InviteTokenIndexRoute = InviteTokenIndexRouteImport.update({
   id: '/invite/$token/',
   path: '/invite/$token/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AppProjectsIdIndexRoute = AppProjectsIdIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppProjectsIdRoute,
-} as any)
-const AppProjectsIdListRoute = AppProjectsIdListRouteImport.update({
-  id: '/list',
-  path: '/list',
-  getParentRoute: () => AppProjectsIdRoute,
-} as any)
-const AppProjectsIdSettingsRoute = AppProjectsIdSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppProjectsIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -115,15 +85,10 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/app/members': typeof AppMembersRouteWithChildren
-  '/app/projects': typeof AppProjectsRouteWithChildren
+  '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
   '/app/members/invite': typeof AppMembersInviteRoute
-  '/app/projects/$id': typeof AppProjectsIdRouteWithChildren
-  '/app/projects/new': typeof AppProjectsNewRoute
   '/invite/$token/': typeof InviteTokenIndexRoute
-  '/app/projects/$id/list': typeof AppProjectsIdListRoute
-  '/app/projects/$id/settings': typeof AppProjectsIdSettingsRoute
-  '/app/projects/$id/': typeof AppProjectsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -132,14 +97,10 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/app/members': typeof AppMembersRouteWithChildren
-  '/app/projects': typeof AppProjectsRouteWithChildren
+  '/app/settings': typeof AppSettingsRoute
   '/app': typeof AppIndexRoute
   '/app/members/invite': typeof AppMembersInviteRoute
-  '/app/projects/new': typeof AppProjectsNewRoute
   '/invite/$token': typeof InviteTokenIndexRoute
-  '/app/projects/$id/list': typeof AppProjectsIdListRoute
-  '/app/projects/$id/settings': typeof AppProjectsIdSettingsRoute
-  '/app/projects/$id': typeof AppProjectsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -150,15 +111,10 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/app/members': typeof AppMembersRouteWithChildren
-  '/app/projects': typeof AppProjectsRouteWithChildren
+  '/app/settings': typeof AppSettingsRoute
   '/app/': typeof AppIndexRoute
   '/app/members/invite': typeof AppMembersInviteRoute
-  '/app/projects/$id': typeof AppProjectsIdRouteWithChildren
-  '/app/projects/new': typeof AppProjectsNewRoute
   '/invite/$token/': typeof InviteTokenIndexRoute
-  '/app/projects/$id/list': typeof AppProjectsIdListRoute
-  '/app/projects/$id/settings': typeof AppProjectsIdSettingsRoute
-  '/app/projects/$id/': typeof AppProjectsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -170,15 +126,10 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/app/members'
-    | '/app/projects'
+    | '/app/settings'
     | '/app/'
     | '/app/members/invite'
-    | '/app/projects/$id'
-    | '/app/projects/new'
     | '/invite/$token/'
-    | '/app/projects/$id/list'
-    | '/app/projects/$id/settings'
-    | '/app/projects/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -187,14 +138,10 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/app/members'
-    | '/app/projects'
+    | '/app/settings'
     | '/app'
     | '/app/members/invite'
-    | '/app/projects/new'
     | '/invite/$token'
-    | '/app/projects/$id/list'
-    | '/app/projects/$id/settings'
-    | '/app/projects/$id'
   id:
     | '__root__'
     | '/'
@@ -204,15 +151,10 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/app/members'
-    | '/app/projects'
+    | '/app/settings'
     | '/app/'
     | '/app/members/invite'
-    | '/app/projects/$id'
-    | '/app/projects/new'
     | '/invite/$token/'
-    | '/app/projects/$id/list'
-    | '/app/projects/$id/settings'
-    | '/app/projects/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -283,11 +225,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMembersRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/projects': {
-      id: '/app/projects'
-      path: '/projects'
-      fullPath: '/app/projects'
-      preLoaderRoute: typeof AppProjectsRouteImport
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/members/invite': {
@@ -297,47 +239,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMembersInviteRouteImport
       parentRoute: typeof AppMembersRoute
     }
-    '/app/projects/$id': {
-      id: '/app/projects/$id'
-      path: '/$id'
-      fullPath: '/app/projects/$id'
-      preLoaderRoute: typeof AppProjectsIdRouteImport
-      parentRoute: typeof AppProjectsRoute
-    }
-    '/app/projects/new': {
-      id: '/app/projects/new'
-      path: '/new'
-      fullPath: '/app/projects/new'
-      preLoaderRoute: typeof AppProjectsNewRouteImport
-      parentRoute: typeof AppProjectsRoute
-    }
     '/invite/$token/': {
       id: '/invite/$token/'
       path: '/invite/$token'
       fullPath: '/invite/$token/'
       preLoaderRoute: typeof InviteTokenIndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/app/projects/$id/': {
-      id: '/app/projects/$id/'
-      path: '/'
-      fullPath: '/app/projects/$id/'
-      preLoaderRoute: typeof AppProjectsIdIndexRouteImport
-      parentRoute: typeof AppProjectsIdRoute
-    }
-    '/app/projects/$id/list': {
-      id: '/app/projects/$id/list'
-      path: '/list'
-      fullPath: '/app/projects/$id/list'
-      preLoaderRoute: typeof AppProjectsIdListRouteImport
-      parentRoute: typeof AppProjectsIdRoute
-    }
-    '/app/projects/$id/settings': {
-      id: '/app/projects/$id/settings'
-      path: '/settings'
-      fullPath: '/app/projects/$id/settings'
-      preLoaderRoute: typeof AppProjectsIdSettingsRouteImport
-      parentRoute: typeof AppProjectsIdRoute
     }
   }
 }
@@ -354,45 +261,15 @@ const AppMembersRouteWithChildren = AppMembersRoute._addFileChildren(
   AppMembersRouteChildren,
 )
 
-interface AppProjectsIdRouteChildren {
-  AppProjectsIdListRoute: typeof AppProjectsIdListRoute
-  AppProjectsIdSettingsRoute: typeof AppProjectsIdSettingsRoute
-  AppProjectsIdIndexRoute: typeof AppProjectsIdIndexRoute
-}
-
-const AppProjectsIdRouteChildren: AppProjectsIdRouteChildren = {
-  AppProjectsIdListRoute: AppProjectsIdListRoute,
-  AppProjectsIdSettingsRoute: AppProjectsIdSettingsRoute,
-  AppProjectsIdIndexRoute: AppProjectsIdIndexRoute,
-}
-
-const AppProjectsIdRouteWithChildren = AppProjectsIdRoute._addFileChildren(
-  AppProjectsIdRouteChildren,
-)
-
-interface AppProjectsRouteChildren {
-  AppProjectsIdRoute: typeof AppProjectsIdRouteWithChildren
-  AppProjectsNewRoute: typeof AppProjectsNewRoute
-}
-
-const AppProjectsRouteChildren: AppProjectsRouteChildren = {
-  AppProjectsIdRoute: AppProjectsIdRouteWithChildren,
-  AppProjectsNewRoute: AppProjectsNewRoute,
-}
-
-const AppProjectsRouteWithChildren = AppProjectsRoute._addFileChildren(
-  AppProjectsRouteChildren,
-)
-
 interface AppRouteChildren {
   AppMembersRoute: typeof AppMembersRouteWithChildren
-  AppProjectsRoute: typeof AppProjectsRouteWithChildren
+  AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppMembersRoute: AppMembersRouteWithChildren,
-  AppProjectsRoute: AppProjectsRouteWithChildren,
+  AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
 }
 

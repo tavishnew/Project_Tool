@@ -29,6 +29,8 @@ export const api = {
     req('/auth/forgot-password', json({ email })),
   resetPassword: (token: string, password: string) =>
     req('/auth/reset-password', json({ token, password })),
+  validateResetToken: (token: string) =>
+    req<{ valid: boolean; email?: string; error?: string }>(`/auth/reset-password/${token}`, { method: 'GET' }),
 
   listProjects: () => req<{ projects: import('./types').Project[] }>('/projects'),
   getProject: (id: string) => req<{ project: import('./types').Project }>(`/projects/${id}`),
@@ -38,7 +40,7 @@ export const api = {
     req(`/projects/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteProject: (id: string) => req(`/projects/${id}`, { method: 'DELETE' }),
 
-  // Workspace members (assuming these endpoints exist on the backend)
+  // Workspace members (existing - immediate add)
   listMembers: () => req<{ members: import('./types').Member[] }>('/members'),
   addMember: (email: string) => req<{ member: import('./types').Member }>('/members', json({ email })),
   removeMember: (userId: string) => req(`/members/${userId}`, { method: 'DELETE' }),
@@ -51,7 +53,7 @@ export const api = {
   listProjectMembers: (projectId: string) =>
     req<{ members: import('./types').Member[] }>(`/projects/${projectId}/members`),
 
-  // Invites (admin + owner)
+  // Project Invites (admin + owner)
   createInvite: (id: string, email?: string) =>
     req<{ invite: import('./types').Invite }>(`/projects/${id}/invites`, json({ email })),
   listInvites: (id: string) =>
@@ -60,6 +62,14 @@ export const api = {
     req(`/projects/${id}/invites/${inviteId}`, { method: 'DELETE' }),
   acceptInvite: (token: string) =>
     req<{ ok: boolean; projectId: string }>(`/projects/invites/${token}/accept`, { method: 'POST' }),
+
+  // Workspace Invites (email-based invite flow)
+  createWorkspaceInvite: (email: string) =>
+    req<{ invite: import('./types').WorkspaceInvite }>('/workspace/invites', json({ email })),
+  listWorkspaceInvites: () =>
+    req<{ invites: import('./types').WorkspaceInvite[] }>('/workspace/invites'),
+  cancelWorkspaceInvite: (inviteId: string) =>
+    req(`/workspace/invites/${inviteId}`, { method: 'DELETE' }),
 
   listTasks: (id: string, params?: { status?: string; assignee?: string }) => {
     const q = new URLSearchParams();
@@ -78,4 +88,8 @@ export const api = {
 
   // New: get all users (for workspace members)
   getUsers: () => req<{ users: import('./types').User[] }>('/users'),
+
+  // Update user profile
+  updateProfile: (data: { name?: string; avatar_url?: string }) =>
+    req<{ user: import('./types').User }>('/auth/profile', { method: 'PATCH', body: JSON.stringify(data) }),
 };

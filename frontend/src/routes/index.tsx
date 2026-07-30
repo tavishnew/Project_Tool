@@ -24,7 +24,7 @@ function Landing() {
     <div className="relative min-h-svh overflow-hidden bg-background">
       <AuroraBlob className="pointer-events-none absolute inset-0" />
 
-      <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6">
+      <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6" data-testid="landing-header">
         <Link to="/" className="flex items-center gap-2">
           <OrbitMark />
           <span className="font-display text-xl font-bold tracking-tight">Orbit</span>
@@ -103,7 +103,7 @@ function Landing() {
         </motion.div>
       </section>
 
-      <section id="features" className="relative z-10 mx-auto max-w-7xl px-6 py-24">
+      <section id="features" className="relative z-10 mx-auto max-w-7xl px-6 py-24" data-testid="features-section">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary">
             Everything, nothing more
@@ -133,7 +133,7 @@ function Landing() {
         </div>
       </section>
 
-      <section id="workflow" className="relative z-10 mx-auto max-w-7xl px-6 pb-24">
+      <section id="workflow" className="relative z-10 mx-auto max-w-7xl px-6 pb-24" data-testid="workflow-section">
         <div className="rounded-3xl border border-border bg-secondary/60 p-10 md:p-16">
           <div className="grid gap-10 md:grid-cols-2 md:items-center">
             <div>
@@ -162,7 +162,7 @@ function Landing() {
         </div>
       </section>
 
-      <section id="pricing" className="relative z-10 mx-auto max-w-3xl px-6 pb-32 text-center">
+      <section id="pricing" className="relative z-10 mx-auto max-w-3xl px-6 pb-32 text-center" data-testid="pricing-section">
         <h2 className="font-display text-4xl font-bold tracking-tight md:text-5xl">
           Bring your team into Orbit.
         </h2>
@@ -174,7 +174,7 @@ function Landing() {
         </div>
       </section>
 
-      <footer className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between border-t border-border px-6 py-8 text-sm text-muted-foreground">
+      <footer className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between border-t border-border px-6 py-8 text-sm text-muted-foreground" data-testid="landing-footer">
         <div className="flex items-center gap-2">
           <OrbitMark size={20} />
           <span>— {new Date().getFullYear()} Orbit</span>

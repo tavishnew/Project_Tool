@@ -29,6 +29,7 @@ export function SpotlightCard({
         "relative overflow-hidden rounded-2xl border border-border bg-card p-6 transition-colors",
         className,
       )}
+      data-testid="spotlight-card"
     >
       <motion.div className="pointer-events-none absolute inset-0" style={{ background: bg }} />
       <div className="relative">{children}</div>

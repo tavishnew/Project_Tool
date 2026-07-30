@@ -16,6 +16,7 @@ export function generateMemberColor(name: string, fallbackIndex: number) {
 }
 =======
 import { useQuery } from '@tanstack/react-query';
+import { FolderKanban, Clock, CheckCircle2 } from 'lucide-react';
 import { api } from '@/api';
 import type { Project, Task, Member } from '@/types';
 >>>>>>> c114262 (api fixed)
@@ -101,10 +102,10 @@ export function useProjectsOverview() {
 >>>>>>> fe93335 (feat: complete useProjectsOverview hook for Task 1)
 
   const stats = [
-    { label: 'Projects', value: totalProjects, icon: 'FolderKanban', color: 'text-primary' },
-    { label: 'Open tasks', value: openTasks, icon: 'Clock', color: 'text-warning' },
-    { label: 'In progress', value: inProgress, icon: 'FolderKanban', color: 'text-info' },
-    { label: 'Completed', value: done, icon: 'CheckCircle2', color: 'text-success' },
+    { label: 'Projects', value: totalProjects, icon: FolderKanban, color: 'text-primary' },
+    { label: 'Open tasks', value: openTasks, icon: Clock, color: 'text-warning' },
+    { label: 'In progress', value: inProgress, icon: FolderKanban, color: 'text-info' },
+    { label: 'Completed', value: done, icon: CheckCircle2, color: 'text-success' },
   ];
 
   function generateMemberColor(name: string, fallbackIndex: number) {
@@ -130,7 +131,7 @@ export function useProjectsOverview() {
     members: membersWithColors,
     generateMemberColor,
     stats,
-    isLoading: projectsLoading || tasksLoading || membersLoading,
+    isLoading: isProjectsLoading || isTasksLoading || isMembersLoading,
     isProjectsLoading,
     isTasksLoading,
     isMembersLoading,

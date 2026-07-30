@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from './db.js';
+import { sendPasswordResetEmail } from './lib/email.js';
 
 let SECRET = process.env.JWT_SECRET;
 if (!SECRET) {
@@ -152,46 +153,75 @@ function hashToken(token) {
 
 export async function requestPasswordReset(email) {
   const normEmail = email.toLowerCase();
-  const { rows } = await db.query('SELECT id FROM users WHERE email = $1', [normEmail]);
+  const { rows } = await db.query('SELECT id, name FROM users WHERE email = $1', [normEmail]);
   const user = rows[0];
   if (!user) return { success: true }; // Don't reveal if email exists
-  
+
   const token = crypto.randomBytes(32).toString('hex');
   const tokenHash = hashToken(token);
-  
+
   // Delete any existing unused tokens for this user
   await db.query('DELETE FROM password_reset_tokens WHERE user_id = $1 AND used_at IS NULL', [user.id]);
-  
+
   await db.query(
     'INSERT INTO password_reset_tokens (user_id, token_hash) VALUES ($1, $2)',
     [user.id, tokenHash]
   );
-  
+
+  // Send reset email
+  const emailResult = await sendPasswordResetEmail({
+    recipientEmail: normEmail,
+    userName: user.name,
+    resetToken: token,
+  });
+
+  if (!emailResult.success) {
+    console.warn(`[AUTH] Password reset email failed: ${emailResult.error}`);
+    // Don't fail the request - token is still valid in DB
+  }
+
   // In development, log the token for testing (do not return in API)
   if (process.env.NODE_ENV !== 'production') {
     console.log(`[DEV] Password reset token for ${email}: ${token}`);
   }
-  
+
   return { success: true };
 }
 
 export async function resetPassword(token, newPassword) {
   const tokenHash = hashToken(token);
-  
+
   const { rows } = await db.query(
-    `SELECT user_id FROM password_reset_tokens 
+    `SELECT user_id FROM password_reset_tokens
      WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now()`,
     [tokenHash]
   );
-  
+
   const resetToken = rows[0];
   if (!resetToken) return { success: false, error: 'Invalid or expired reset token' };
-  
+
   const hash = await bcrypt.hash(newPassword, 10);
-  
+
   await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, resetToken.user_id]);
   await db.query('UPDATE password_reset_tokens SET used_at = now() WHERE user_id = $1', [resetToken.user_id]);
-  
+
   return { success: true };
+}
+
+export async function validateResetToken(token) {
+  const tokenHash = hashToken(token);
+
+  const { rows } = await db.query(
+    `SELECT user_id FROM password_reset_tokens
+     WHERE token_hash = $1 AND used_at IS NULL AND expires_at > now()`,
+    [tokenHash]
+  );
+
+  if (!rows.length) return { valid: false, error: 'Invalid or expired reset token' };
+
+  // Get user email for display
+  const { rows: userRows } = await db.query('SELECT email FROM users WHERE id = $1', [rows[0].user_id]);
+
+  return { valid: true, email: userRows[0]?.email };
 }
 

@@ -44,8 +44,8 @@ function LoginPage() {
   }
 
   return (
-    <AuthShell title="Welcome back" subtitle="Sign in to keep the work moving.">
-      <form onSubmit={onSubmit} className="space-y-4">
+    <AuthShell title="Welcome back" subtitle="Sign in to keep the work moving." data-testid="login-page">
+      <form onSubmit={onSubmit} className="space-y-4" data-testid="login-form">
         {error && (
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
             {error}

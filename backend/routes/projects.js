@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { requireAuth, requireProjectMember, requireProjectOwner } from '../auth.js';
 import { db } from '../db.js';
 import { serializeTask } from './tasks.js';
+import { sendProjectInvite } from '../lib/email.js';
 
 const router = express.Router();
 router.use(requireAuth);
@@ -216,20 +217,36 @@ router.post('/:id/invites', requireProjectOwner, async (req, res) => {
   const { email } = req.body || {};
   const token = crypto.randomBytes(16).toString('hex');
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  
+
   await db.query(
     `INSERT INTO project_invites (project_id, token, email, created_by, expires_at)
      VALUES ($1, $2, $3, $4, $5)`,
     [req.params.id, token, email || null, req.user.id, expiresAt]
   );
-  
+
   const inviteUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/invite/${token}`;
-  
+
   if (email) {
-    // In production: send email with inviteUrl
-    console.log(`[INVITE] Send email to ${email}: ${inviteUrl}`);
+    const { rows } = await db.query('SELECT name FROM projects WHERE id = $1', [req.params.id]);
+    const projectName = rows[0]?.name || 'a project';
+    const inviterName = req.user.name || 'A team member';
+
+    const emailResult = await sendProjectInvite({
+      recipientEmail: email,
+      inviterName,
+      projectName,
+      inviteUrl,
+    });
+
+    if (!emailResult.success) {
+      console.warn(`[INVITE] Email failed: ${emailResult.error}`);
+      return res.json({
+        invite: { token, url: inviteUrl, email, expires_at: expiresAt },
+        warning: 'Invitation created but email failed to send',
+      });
+    }
   }
-  
+
   res.json({ invite: { token, url: inviteUrl, email, expires_at: expiresAt } });
 });
 

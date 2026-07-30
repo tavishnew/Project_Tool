@@ -13,11 +13,10 @@ import {
 } from "@/components/ui/sidebar";
 import {
   LayoutGrid,
-  KanbanSquare,
   Settings,
-  Users,
   LogOut,
   FolderKanban,
+  Users,
 } from "lucide-react";
 import { OrbitMark } from "./orbit-mark";
 import { useAuth } from "@/auth";
@@ -25,13 +24,77 @@ import { api } from "@/api";
 import type { Project } from "@/types";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { SidebarFilters } from "./sidebar-filters";
+import { useSidebarFilters } from "@/lib/sidebar-filters-context";
 import * as React from "react";
+
+// Extracted: workspace nav links (Projects, Members, Settings)
+function WorkspaceNav({ isActive, onNavigate }: { isActive: (p: string) => boolean; onNavigate: (to: string) => void }) {
+  const { user } = useAuth();
+  return (
+    <SidebarGroup data-testid="workspace-nav">
+      <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton isActive={isActive("/app")} onClick={() => onNavigate("/app")}>
+              <LayoutGrid />
+              <span>Projects</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          {user?.role === 'admin' && (
+            <SidebarMenuItem>
+              <SidebarMenuButton isActive={isActive("/app/members")} onClick={() => onNavigate("/app/members")}>
+                <Users />
+                <span>Members</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
+          <SidebarMenuItem>
+            <SidebarMenuButton isActive={isActive("/app/settings")} onClick={() => onNavigate("/app/settings")}>
+              <Settings />
+              <span>Settings</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+}
+
+// Extracted: skeleton loader for project list
+function SkeletonProjectItem() {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton>
+        <span className="shrink-0 h-2 w-2 rounded-full bg-muted-foreground/20" />
+        <span className="animate-pulse rounded bg-muted-foreground/20 px-4 py-1 text-transparent">Loading</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
+// Extracted: single project nav item
+function ProjectNavItem({ project, isActive, onNavigate }: { project: Project; isActive: (p: string) => boolean; onNavigate: (to: string) => void }) {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        isActive={isActive(`/app/projects/${project.id}`) || isActive(`/app/projects/${project.id}/list`)}
+        onClick={() => onNavigate(`/app/projects/${project.id}`)}
+      >
+        <span className="shrink-0 h-2 w-2 rounded-full" style={{ backgroundColor: project.color }} />
+        <span className="truncate">{project.name}</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
 
 export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const pathname = location.pathname;
+  const { filters, setFilters } = useSidebarFilters();
 
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -76,78 +139,35 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="offcanvas">
+    <Sidebar collapsible="offcanvas" data-testid="app-sidebar">
       <SidebarHeader className="border-b border-sidebar-border">
-        <button className="flex items-center gap-2 px-2 py-1.5 w-full text-left" onClick={() => handleNavigate("/app")}>
+        <button className="flex w-full items-center gap-2 px-2 py-1.5 text-left" onClick={() => handleNavigate("/app")}>
           <OrbitMark size={26} />
           <span className="font-display text-lg font-bold tracking-tight">Orbit</span>
         </button>
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton isActive={isActive("/app")} onClick={() => handleNavigate("/app")}>
-                  <LayoutGrid />
-                  <span>Dashboard</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton isActive={isActive("/app/members")} onClick={() => handleNavigate("/app/members")}>
-                  <Users />
-                  <span>Members</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <WorkspaceNav isActive={isActive} onNavigate={handleNavigate} />
 
-        <SidebarGroup>
+        <SidebarFilters filters={filters} onChange={setFilters} />
+
+        <SidebarGroup data-testid="project-list">
           <SidebarGroupLabel>Projects</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {loading ? (
-                <>
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <SidebarMenuItem key={i}>
-                      <SidebarMenuButton>
-                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: "gray-200" }} />
-                        <span className="animate-pulse">Loading project...</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </>
+                Array.from({ length: 3 }).map((_, i) => <SkeletonProjectItem key={i} />)
               ) : (
-                projects.map((p) => (
-                  <SidebarMenuItem key={p.id}>
-                    <SidebarMenuButton
-                      isActive={isActive(`/app/projects/${p.id}`)}
-                      onClick={() => handleNavigate(`/app/projects/${p.id}`)}
-                    >
-                      <span
-                        className="h-2 w-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: p.color }}
-                      />
-                      <span className="truncate">{p.name}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))
+                projects.map((p) => <ProjectNavItem key={p.id} project={p} isActive={isActive} onNavigate={handleNavigate} />)
               )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border">
-        <Button
-          variant="ghost"
-          className="justify-start gap-2"
-          onClick={handleLogout}
-        >
+      <SidebarFooter className="border-t border-sidebar-border" data-testid="sidebar-footer">
+        <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleLogout}>
           <LogOut className="h-4 w-4" />
           Sign out
         </Button>

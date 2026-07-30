@@ -7,6 +7,8 @@ export interface User {
   name: string;
   email: string;
   role?: 'user' | 'admin';
+  avatar_url?: string | null;
+  created_at?: string;
 }
 
 export interface Member {
@@ -55,6 +57,16 @@ export interface Invite {
   used_at: string | null;
   link: string;
   pending: boolean;
+}
+
+export interface WorkspaceInvite {
+  id: string;
+  token: string;
+  email: string;
+  created_by: string;
+  created_at: string;
+  expires_at: string;
+  used_at: string | null;
 }
 
 export const STATUS_LABELS: Record<TaskStatus, string> = {

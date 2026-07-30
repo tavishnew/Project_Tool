@@ -1,13 +1,17 @@
+import { cn } from "@/lib/utils";
+
 export function ProgressRing({
   value,
   size = 56,
   stroke = 5,
   color = "var(--color-primary)",
+  className,
 }: {
   value: number;
   size?: number;
   stroke?: number;
   color?: string;
+  className?: string;
 }) {
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
@@ -15,6 +19,7 @@ export function ProgressRing({
   const percent = Math.round(pct * 100);
   return (
     <svg
+<<<<<<< HEAD
       width={size}
       height={size}
       className="shrink-0"
@@ -23,6 +28,12 @@ export function ProgressRing({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-label={`${percent}% complete`}
+=======
+      data-testid="progress-ring"
+      width={size}
+      height={size}
+      className={cn("shrink-0", className)}
+>>>>>>> 2766c08 (final updates)
     >
       <circle
         cx={size / 2}
