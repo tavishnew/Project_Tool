@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://project-tool-c5nd.onrender.com/api/:path*" }
+  ]
+}
