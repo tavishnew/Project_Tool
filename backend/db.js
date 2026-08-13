@@ -1,12 +1,10 @@
-import { PGlite } from '@electric-sql/pglite';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import pg from 'pg';
+const { Pool } = pg;
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(__dirname, '.data');
-
-// ponytail: file-based PGlite = zero-config Postgres, no external server/account.
-export const db = new PGlite(dataDir);
+export const db = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS users (
@@ -149,6 +147,6 @@ CREATE INDEX IF NOT EXISTS idx_project_audit_logs_entity ON project_audit_logs(e
 
 let ready;
 export function initDb() {
-  if (!ready) ready = db.exec(SCHEMA);
+  if (!ready) ready = db.query(SCHEMA);
   return ready;
 }

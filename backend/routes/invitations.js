@@ -52,9 +52,10 @@ router.get('/:token', async (req, res) => {
 router.post('/:token/accept', acceptInviteLimiter, requireAuth, async (req, res) => {
   if (!validToken(req.params.token)) return res.status(404).json({ error: 'Invitation not found' });
 
-  await db.query('BEGIN');
+  const client = await db.connect();
   try {
-    const { rows } = await db.query(
+    await client.query('BEGIN');
+    const { rows } = await client.query(
       `SELECT id, project_id, email, role, status, expires_at
        FROM project_invitations
        WHERE token_hash = $1
@@ -64,39 +65,40 @@ router.post('/:token/accept', acceptInviteLimiter, requireAuth, async (req, res)
     const invitation = rows[0];
 
     if (!invitation || invitation.status !== 'pending' || new Date(invitation.expires_at) <= new Date()) {
-      await db.query('ROLLBACK');
+      await client.query('ROLLBACK');
+      client.release();
       return res.status(400).json({ error: 'Invitation is invalid or expired' });
     }
     if (invitation.email.toLowerCase() !== req.user.email.toLowerCase()) {
-      await db.query('ROLLBACK');
+      await client.query('ROLLBACK');
+      client.release();
       return res.status(403).json({ error: 'Sign in with the invited email address to accept this invitation' });
     }
 
-    await db.query(
+    await client.query(
       `INSERT INTO project_members (project_id, user_id, role)
        VALUES ($1, $2, $3)
        ON CONFLICT (project_id, user_id) DO UPDATE SET role = EXCLUDED.role`,
       [invitation.project_id, req.user.id, invitation.role]
     );
-    await db.query(
+    await client.query(
       `UPDATE project_invitations
        SET status = 'accepted', accepted_at = now()
        WHERE id = $1`,
       [invitation.id]
     );
-    await logProjectActivity({
-      projectId: invitation.project_id,
-      actorId: req.user.id,
-      action: 'member.added',
-      entityType: 'user',
-      entityId: req.user.id,
-      metadata: { email: req.user.email, role: invitation.role, source: 'invitation' },
-    });
-    await db.query('COMMIT');
+    await client.query(
+      `INSERT INTO project_audit_logs (project_id, actor_id, action, entity_type, entity_id, metadata)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb)`,
+      [invitation.project_id, req.user.id, 'member.added', 'user', req.user.id, JSON.stringify({ email: req.user.email, role: invitation.role, source: 'invitation' })]
+    );
+    await client.query('COMMIT');
+    client.release();
 
     res.json({ ok: true, projectId: String(invitation.project_id), role: invitation.role });
   } catch (err) {
-    await db.query('ROLLBACK').catch(() => undefined);
+    await client.query('ROLLBACK').catch(() => undefined);
+    client.release();
     console.error('[PROJECT INVITATION] Failed to accept invitation', err);
     res.status(500).json({ error: 'Unable to accept invitation' });
   }

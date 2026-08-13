@@ -267,9 +267,10 @@ router.delete('/account', sensitiveAccountLimiter, requireAuth, async (req, res)
   const user = await verifyCredentials(req.user.email, currentPassword);
   if (!user) return res.status(401).json({ error: 'current password is incorrect' });
 
-  await db.query('BEGIN');
+  const client = await db.connect();
   try {
-    const { rows: ownedProjects } = await db.query(
+    await client.query('BEGIN');
+    const { rows: ownedProjects } = await client.query(
       'SELECT id, name FROM projects WHERE owner_id = $1 FOR UPDATE',
       [req.user.id]
     );
@@ -281,43 +282,44 @@ router.delete('/account', sensitiveAccountLimiter, requireAuth, async (req, res)
         await db.query('ROLLBACK');
         return res.status(400).json({ error: `Choose an existing member to own “${project.name}” before deleting your account.` });
       }
-      const { rows: eligible } = await db.query(
+      const { rows: eligible } = await client.query(
         'SELECT id, name, email FROM users WHERE id = $1 AND id <> $2 AND EXISTS (SELECT 1 FROM project_members WHERE project_id = $3 AND user_id = $1)',
         [newOwnerId, req.user.id, project.id]
       );
       if (!eligible.length) {
-        await db.query('ROLLBACK');
+        await client.query('ROLLBACK');
+        client.release();
         return res.status(400).json({ error: `The selected new owner for “${project.name}” must already be a project member.` });
       }
-      await db.query('UPDATE projects SET owner_id = $1 WHERE id = $2', [newOwnerId, project.id]);
-      await db.query(
+      await client.query('UPDATE projects SET owner_id = $1 WHERE id = $2', [newOwnerId, project.id]);
+      await client.query(
         `INSERT INTO project_members (project_id, user_id, role)
          VALUES ($1, $2, 'admin')
          ON CONFLICT (project_id, user_id) DO UPDATE SET role = 'admin'`,
         [project.id, newOwnerId]
       );
-      await logProjectActivity({
-        projectId: project.id,
-        actorId: req.user.id,
-        action: 'project.ownership_transferred',
-        entityType: 'project',
-        entityId: project.id,
-        metadata: { newOwnerId, newOwnerEmail: eligible[0].email, reason: 'account_deletion' },
-      });
+      await client.query(
+        `INSERT INTO project_audit_logs (project_id, actor_id, action, entity_type, entity_id, metadata)
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb)`,
+        [project.id, req.user.id, 'project.ownership_transferred', 'project', project.id, JSON.stringify({ newOwnerId, newOwnerEmail: eligible[0].email, reason: 'account_deletion' })]
+      );
     }
 
     // Remove outstanding tokens and invitations created by this account before deleting it.
-    await db.query('DELETE FROM project_invitations WHERE invited_by = $1', [req.user.id]);
-    await db.query('DELETE FROM project_invites WHERE created_by = $1', [req.user.id]);
-    await db.query('DELETE FROM workspace_invites WHERE created_by = $1', [req.user.id]);
-    await db.query('DELETE FROM users WHERE id = $1', [req.user.id]);
-    await db.query('COMMIT');
+    await client.query('DELETE FROM project_invitations WHERE invited_by = $1', [req.user.id]);
+    await client.query('DELETE FROM project_invites WHERE created_by = $1', [req.user.id]);
+    await client.query('DELETE FROM workspace_invites WHERE created_by = $1', [req.user.id]);
+    await client.query('DELETE FROM users WHERE id = $1', [req.user.id]);
+    await client.query('COMMIT');
     clearTokenCookie(res);
     res.json({ ok: true });
   } catch (err) {
-    await db.query('ROLLBACK').catch(() => undefined);
+    await client.query('ROLLBACK').catch(() => undefined);
     console.error('[ACCOUNT] Failed to delete account', err);
     res.status(500).json({ error: 'Unable to delete account' });
+  }
+  finally {
+    try { client.release(); } catch {}
   }
 });
 

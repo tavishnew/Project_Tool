@@ -106,7 +106,7 @@ async function shutdown() {
   if (shuttingDown) return;
   shuttingDown = true;
   server.close(async () => {
-    await db.close();
+    await db.end();
     process.exit(0);
   });
 }

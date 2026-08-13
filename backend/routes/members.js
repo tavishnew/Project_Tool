@@ -62,10 +62,18 @@ router.delete('/:userId', async (req, res) => {
   // Prevent deleting yourself? Not implemented.
   try {
     // Start a transaction to delete related data (though cascades should handle it)
-    await db.query('BEGIN');
-    // Delete the user (cascades to projects, project_members, project_invites, and sets assignee_id to null in tasks)
-    await db.query('DELETE FROM users WHERE id = $1', [userId]);
-    await db.query('COMMIT');
+    const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      // Delete the user (cascades to projects, project_members, project_invites, and sets assignee_id to null in tasks)
+      await client.query('DELETE FROM users WHERE id = $1', [userId]);
+      await client.query('COMMIT');
+      client.release();
+    } catch (err) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      client.release();
+      throw err;
+    }
     res.json({ ok: true });
   } catch (err) {
     await db.query('ROLLBACK');

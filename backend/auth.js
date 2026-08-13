@@ -26,9 +26,10 @@ export async function registerUser(name, email, password, role) {
 
 // On registration, accept all still-valid email-bound project invitations atomically.
 async function acceptPendingInvites(email, userId) {
-  await db.query('BEGIN');
+  const client = await db.connect();
   try {
-    const { rows } = await db.query(
+    await client.query('BEGIN');
+    const { rows } = await client.query(
       `SELECT id, project_id, role
        FROM project_invitations
        WHERE email = $1 AND status = 'pending' AND expires_at > now()
@@ -37,32 +38,31 @@ async function acceptPendingInvites(email, userId) {
     );
 
     for (const invitation of rows) {
-      await db.query(
+      await client.query(
         `INSERT INTO project_members (project_id, user_id, role)
          VALUES ($1, $2, $3)
          ON CONFLICT (project_id, user_id) DO UPDATE SET role = EXCLUDED.role`,
         [invitation.project_id, userId, invitation.role]
       );
-      await db.query(
+      await client.query(
         `UPDATE project_invitations
          SET status = 'accepted', accepted_at = now()
          WHERE id = $1`,
         [invitation.id]
       );
-      await logProjectActivity({
-        projectId: invitation.project_id,
-        actorId: userId,
-        action: 'member.added',
-        entityType: 'user',
-        entityId: userId,
-        metadata: { email, role: invitation.role, source: 'registration' },
-      });
+      await client.query(
+        `INSERT INTO project_audit_logs (project_id, actor_id, action, entity_type, entity_id, metadata)
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb)`,
+        [invitation.project_id, userId, 'member.added', 'user', userId, JSON.stringify({ email, role: invitation.role, source: 'registration' })]
+      );
     }
 
-    await db.query('COMMIT');
+    await client.query('COMMIT');
   } catch (err) {
-    await db.query('ROLLBACK');
+    await client.query('ROLLBACK').catch(() => undefined);
     throw err;
+  } finally {
+    client.release();
   }
 }
 
@@ -259,9 +259,10 @@ export async function completePasswordUpdate({ email, code, password }) {
   const normEmail = normalizeEmail(email);
   const codeHash = hashPasswordUpdateCode(normEmail, code);
 
-  await db.query('BEGIN');
-  try {
-    const { rows } = await db.query(
+  const client = await db.connect();
+    try {
+      await client.query('BEGIN');
+      const { rows } = await client.query(
       `SELECT puc.id, puc.user_id
        FROM password_update_codes puc
        JOIN users u ON u.id = puc.user_id
@@ -276,19 +277,25 @@ export async function completePasswordUpdate({ email, code, password }) {
     );
     const verification = rows[0];
     if (!verification) {
-      await db.query('ROLLBACK');
-      return { success: false, error: 'Invalid or expired verification code' };
+        await client.query('ROLLBACK');
+        client.release();
+        return { success: false, error: 'Invalid or expired verification code' };
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [passwordHash, verification.user_id]);
-    await db.query('UPDATE password_update_codes SET used_at = now() WHERE user_id = $1 AND used_at IS NULL', [verification.user_id]);
-    await db.query('DELETE FROM password_reset_tokens WHERE user_id = $1', [verification.user_id]);
-    await db.query('DELETE FROM login_failure_attempts WHERE email = $1', [normEmail]);
-    await db.query('COMMIT');
-    return { success: true };
+      await client.query('UPDATE users SET password_hash = $1 WHERE id = $2', [passwordHash, verification.user_id]);
+      await client.query('UPDATE password_update_codes SET used_at = now() WHERE user_id = $1 AND used_at IS NULL', [verification.user_id]);
+      await client.query('DELETE FROM password_reset_tokens WHERE user_id = $1', [verification.user_id]);
+      await client.query('DELETE FROM login_failure_attempts WHERE email = $1', [normEmail]);
+      await client.query('COMMIT');
+      client.release();
+      return { success: true };
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => undefined);
+      client.release();
+      throw error;
+    }
   } catch (error) {
-    await db.query('ROLLBACK').catch(() => undefined);
     throw error;
   }
 }
