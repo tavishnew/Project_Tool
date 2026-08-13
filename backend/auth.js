@@ -295,9 +295,6 @@ export async function completePasswordUpdate({ email, code, password }) {
       client.release();
       throw error;
     }
-  } catch (error) {
-    throw error;
-  }
 }
 
 export async function requestPasswordReset(email) {
