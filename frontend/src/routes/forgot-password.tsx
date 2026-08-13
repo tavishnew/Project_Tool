@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,12 +15,16 @@ export const Route = createFileRoute("/forgot-password")({
       { name: "description", content: "Reset your Orbit account password." },
     ],
   }),
+  validateSearch: (search: { email?: string }) => ({
+    email: typeof search.email === "string" ? search.email : undefined,
+  }),
   component: ForgotPasswordPage,
 });
 
 function ForgotPasswordPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const { email: recoveryEmail } = useSearch({ strict: false }) as { email?: string };
+  const [email, setEmail] = useState(recoveryEmail || "");
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: FormEvent) {

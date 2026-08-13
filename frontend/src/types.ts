@@ -17,6 +17,7 @@ export interface Member {
   email: string;
   avatarUrl?: string | null;
   isOwner: boolean;
+  role?: 'member' | 'admin';
   color?: string;
 }
 
@@ -34,6 +35,7 @@ export interface Project {
   member_ids?: string[];
   color?: string;
   status?: ProjectStatus;
+  can_manage_members?: boolean;
 }
 
 export interface Task {
@@ -48,15 +50,45 @@ export interface Task {
   created_at: string;
 }
 
-export interface Invite {
+export type InvitationDeliveryStatus = 'not_attempted' | 'sent' | 'failed';
+
+export interface ProjectInvitation {
   id: string;
-  token: string;
-  email: string | null;
-  created_at: string;
+  email: string;
+  role: 'member' | 'admin';
+  status: 'pending' | 'accepted' | 'revoked';
+  invited_by: string;
   expires_at: string;
-  used_at: string | null;
-  link: string;
-  pending: boolean;
+  created_at: string;
+  accepted_at: string | null;
+  delivery_status: InvitationDeliveryStatus;
+  delivery_error: string | null;
+  delivery_message_id: string | null;
+  delivery_attempted_at: string | null;
+}
+
+export interface ProjectInvitationCreateResult {
+  invite: ProjectInvitation;
+  delivery: {
+    status: Exclude<InvitationDeliveryStatus, 'not_attempted'>;
+    attempted_at?: string | null;
+    error?: string | null;
+  };
+  warning?: string;
+}
+
+export interface ProjectInvitationPreview {
+  projectId: string;
+  projectName: string;
+  email: string;
+  role: 'member' | 'admin';
+  expiresAt: string;
+}
+
+export interface OwnedProjectForDeletion {
+  id: string;
+  name: string;
+  eligibleMembers: Array<{ id: string; name: string; email: string }>;
 }
 
 export interface WorkspaceInvite {

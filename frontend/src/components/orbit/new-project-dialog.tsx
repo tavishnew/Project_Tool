@@ -15,7 +15,7 @@ import { api } from "@/api";
 import { useAuth } from "@/auth";
 import { cn } from "@/lib/utils";
 
-const COLORS = ["#ff5a4e", "#f59e0b", "#10b981", "#6366f1", "#ec4899", "#0ea5e9"];
+const COLORS = ["#A0522D", "#C9963F", "#6E8062", "#6B4F36", "#8C7355", "#B46B4D"];
 
 export function NewProjectDialog({
   open,
@@ -80,7 +80,7 @@ export function NewProjectDialog({
                   type="button"
                   onClick={() => setColor(c)}
                   className={cn(
-                    "h-8 w-8 rounded-full transition-transform",
+                    "h-8 w-8 border border-primary-foreground/50 transition-transform",
                     color === c && "ring-2 ring-offset-2 ring-offset-background scale-110",
                   )}
                   style={{ backgroundColor: c, boxShadow: color === c ? `0 0 0 2px ${c}` : undefined }}
@@ -92,7 +92,7 @@ export function NewProjectDialog({
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={submit} disabled={loading}>
+          <Button className="ledger-action" onClick={submit} disabled={loading}>
             {loading ? 'Creating...' : 'Create project'}
           </Button>
         </DialogFooter>

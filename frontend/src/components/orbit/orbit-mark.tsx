@@ -1,33 +1,36 @@
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+/**
+ * Orbit's compact mark: an open record ring with a forward progress stroke.
+ * It inherits `currentColor`, keeping the same asset legible in the header,
+ * workspace chrome, footer, and favicon-adjacent contexts.
+ */
 export function OrbitMark({ className, size = 28 }: { className?: string; size?: number }) {
   return (
-    <div
-      className={cn("relative inline-flex items-center justify-center", className)}
-      style={{ width: size, height: size }}
+    <svg
+      aria-hidden="true"
+      className={cn("inline-block shrink-0", className)}
+      fill="none"
+      viewBox="0 0 32 32"
+      width={size}
+      height={size}
+      xmlns="http://www.w3.org/2000/svg"
     >
-      <motion.span
-        className="absolute inset-0 rounded-full border-2 border-primary/40"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
+      <path
+        d="M16 5.25A10.75 10.75 0 1 0 26.2 18.8"
+        stroke="currentColor"
+        strokeWidth="3.25"
+        strokeLinecap="square"
       />
-      <motion.span
-        className="absolute rounded-full bg-primary"
-        style={{ width: size * 0.28, height: size * 0.28 }}
-        animate={{ scale: [1, 1.15, 1] }}
-        transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+      <path
+        d="M17.75 4.75H26.5V13.5"
+        stroke="currentColor"
+        strokeWidth="3.25"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
       />
-      <span
-        className="absolute rounded-full bg-primary/70"
-        style={{
-          width: size * 0.14,
-          height: size * 0.14,
-          top: 0,
-          left: "50%",
-          transform: "translate(-50%, -30%)",
-        }}
-      />
-    </div>
+      <path d="M26.25 5.75 17 15" stroke="currentColor" strokeWidth="3.25" strokeLinecap="square" />
+      <rect x="13.25" y="13.25" width="5.5" height="5.5" fill="currentColor" />
+    </svg>
   );
 }

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Spectral:wght@400;500;600;700&family=Source+Sans+3:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,59 +6,60 @@
 
 @layer base {
   :root {
-    --radius: 0.75rem;
+    --radius: 0.375rem;
 
-    --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
-    --font-display: 'Sora', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Spectral', Georgia, serif;
+    --font-ui: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Fraunces', Georgia, serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-    /* HSL format for Tailwind v3 hsl(var(--color)) pattern */
-    --background: 0 0% 100%;
-    --surface: 40 20% 97%;
-    --foreground: 30 10% 18%;
+    /* Ember Ledger: warm parchment, espresso structure, and material accents. */
+    --background: 38 38% 88%;
+    --surface: 38 37% 83%;
+    --surface-light: 38 44% 91%;
+    --foreground: 29 29% 13%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 30 10% 18%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 30 10% 18%;
+    --card: 38 44% 91%;
+    --card-foreground: 29 29% 13%;
+    --popover: 38 44% 91%;
+    --popover-foreground: 29 29% 13%;
 
-    /* Coral #ff5a4e ≈ hsl(12 100% 65%) */
-    --primary: 12 100% 65%;
-    --primary-foreground: 0 0% 100%;
-    --primary-soft: 12 30% 96%;
+    --primary: 29 32% 17%;
+    --primary-foreground: 38 44% 91%;
+    --primary-soft: 39 56% 52% / 0.16;
 
-    --secondary: 40 10% 97%;
-    --secondary-foreground: 30 10% 20%;
-    --muted: 40 15% 96%;
-    --muted-foreground: 30 10% 50%;
-    --accent: 12 30% 96%;
-    --accent-foreground: 12 50% 35%;
+    --secondary: 38 37% 83%;
+    --secondary-foreground: 29 29% 13%;
+    --muted: 37 31% 57% / 0.18;
+    --muted-foreground: 30 33% 32%;
+    --accent: 39 56% 52% / 0.17;
+    --accent-foreground: 29 32% 17%;
 
-    --destructive: 0 70% 55%;
-    --destructive-foreground: 0 0% 100%;
-    --overdue: 0 70% 55%;
-    --success: 155 50% 55%;
-    --warning: 45 90% 60%;
-    --info: 240 60% 55%;
+    --destructive: 19 57% 40%;
+    --destructive-foreground: 38 44% 91%;
+    --overdue: 19 57% 40%;
+    --success: 95 13% 44%;
+    --warning: 36 25% 44%;
+    --info: 30 33% 32%;
 
-    --border: 40 10% 90%;
-    --input: 40 10% 90%;
-    --ring: 12 100% 65% / 0.4;
+    --border: 37 31% 57% / 0.72;
+    --input: 37 31% 57% / 0.68;
+    --ring: 39 56% 52% / 0.68;
 
-    --chart-1: 12 100% 65%;
-    --chart-2: 40 80% 65%;
-    --chart-3: 240 60% 55%;
-    --chart-4: 155 50% 55%;
-    --chart-5: 300 50% 55%;
+    --chart-1: 39 56% 52%;
+    --chart-2: 95 13% 44%;
+    --chart-3: 19 57% 40%;
+    --chart-4: 36 25% 44%;
+    --chart-5: 30 33% 32%;
 
-    --sidebar: 40 20% 98%;
-    --sidebar-foreground: 30 10% 25%;
-    --sidebar-primary: 12 100% 65%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 12 30% 96%;
-    --sidebar-accent-foreground: 12 50% 35%;
-    --sidebar-border: 40 10% 90%;
-    --sidebar-ring: 12 100% 65% / 0.4;
+    --sidebar: 38 44% 91%;
+    --sidebar-foreground: 29 29% 13%;
+    --sidebar-primary: 29 32% 17%;
+    --sidebar-primary-foreground: 38 44% 91%;
+    --sidebar-accent: 39 56% 52% / 0.15;
+    --sidebar-accent-foreground: 29 32% 17%;
+    --sidebar-border: 37 31% 57% / 0.72;
+    --sidebar-ring: 39 56% 52% / 0.68;
   }
 
   .dark {
@@ -67,6 +68,14 @@
 
   * {
     border-color: hsl(var(--border));
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
 
   html, body, #root {
@@ -75,19 +84,54 @@
     color: hsl(var(--foreground));
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  html::-webkit-scrollbar,
-  body::-webkit-scrollbar,
-  #root::-webkit-scrollbar {
-    display: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    font-variation-settings: "opsz" 96;
+    letter-spacing: -0.025em;
+  }
+
+  button, input, textarea, select, [role="button"] {
+    font-family: var(--font-ui);
+  }
+
+  ::selection {
+    background: hsl(var(--primary-soft));
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer components {
+  .auth-field {
+    display: grid;
+    gap: 0.25rem;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card) / 0.74);
+    padding: 0.5rem 0.75rem 0.4rem;
+    box-shadow: inset 0 1px 0 hsl(var(--primary-foreground) / 0.24), 0 1px 2px hsl(var(--foreground) / 0.05);
+    transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  }
+
+  .auth-field:hover {
+    background: hsl(var(--card));
+  }
+
+  .auth-field:focus-within {
+    border-color: hsl(var(--ring));
+    background: hsl(var(--card));
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.16), inset 0 1px 0 hsl(var(--primary-foreground) / 0.3);
+    transform: translateY(-1px);
+  }
+
+  .auth-field-label {
+    color: hsl(var(--muted-foreground));
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-transform: uppercase;
   }
 }
 
@@ -618,4 +662,142 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* ---------- Ember Ledger editorial primitives ---------- */
+@layer components {
+  .font-ui { font-family: var(--font-ui); }
+
+  .paper-grain {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .paper-grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.16;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='noise'><feTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23noise)' opacity='.23'/></svg>");
+  }
+
+  .ledger-frame {
+    position: relative;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    box-shadow: inset 0 0 0 4px hsl(var(--card)), inset 0 0 0 5px hsl(var(--border)), 4px 5px 0 hsl(var(--foreground) / 0.08);
+  }
+
+  .ledger-panel {
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    box-shadow: 3px 4px 0 hsl(var(--foreground) / 0.07);
+  }
+
+  .ledger-panel--dark {
+    border: 1px solid hsl(var(--primary));
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    box-shadow: 4px 5px 0 hsl(var(--foreground) / 0.18);
+  }
+
+  .ledger-caption {
+    font-family: var(--font-ui);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    line-height: 1.25;
+    text-transform: uppercase;
+  }
+
+  .ledger-rule {
+    height: 4px;
+    border-top: 1px solid hsl(var(--border));
+    border-bottom: 1px solid hsl(var(--border));
+    background: repeating-linear-gradient(90deg, hsl(var(--primary)) 0 7px, transparent 7px 13px);
+  }
+
+  .ledger-proof-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    border-top: 1px solid hsl(var(--border));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  .ledger-proof-row > * + * {
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  @media (min-width: 640px) {
+    .ledger-proof-row {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .ledger-proof-row > * + * {
+      border-top: 0;
+      border-left: 1px solid hsl(var(--border));
+    }
+  }
+
+  .ledger-kicker {
+    font-family: var(--font-ui);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .ledger-action {
+    transition: transform 180ms cubic-bezier(.2,.8,.2,1), box-shadow 180ms cubic-bezier(.2,.8,.2,1), background-color 180ms ease;
+  }
+
+  .ledger-action:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 hsl(var(--foreground) / 0.17);
+  }
+
+  .ledger-action:hover .ledger-arrow {
+    transform: translateX(3px);
+  }
+
+  .ledger-arrow { transition: transform 180ms ease; }
+
+  .ledger-task-card {
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    box-shadow: 2px 3px 0 hsl(var(--foreground) / 0.06);
+    transition: transform 180ms cubic-bezier(.2,.8,.2,1), box-shadow 180ms ease, border-color 180ms ease;
+  }
+
+  .ledger-task-card:hover {
+    transform: translateY(-3px);
+    border-color: hsl(var(--primary));
+    box-shadow: 4px 6px 0 hsl(var(--foreground) / 0.1);
+  }
+
+  .ledger-column {
+    border: 1px solid hsl(var(--border));
+    border-top: 3px solid hsl(var(--foreground));
+    background: hsl(var(--surface) / 0.5);
+  }
+
+  .ledger-input {
+    border-radius: 0.25rem;
+    background: hsl(var(--surface-light, var(--card)));
+    box-shadow: inset 0 1px 0 hsl(var(--background) / 0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ledger-action, .ledger-arrow, .ledger-task-card {
+    transition: none !important;
+  }
+
+  .ledger-action:hover, .ledger-task-card:hover {
+    transform: none;
+  }
 }

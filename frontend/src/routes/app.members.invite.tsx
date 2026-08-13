@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/auth';
 import { api } from '@/api';
 import { CheckCircle2 } from 'lucide-react';
 
@@ -13,9 +12,7 @@ export const Route = createFileRoute('/app/members/invite')({
 
 function InviteMemberPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('member');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
@@ -25,9 +22,7 @@ function InviteMemberPage() {
     setLoading(true);
     setError(null);
     try {
-      // This endpoint might not exist, simulate for now
-      // In real implementation: await api.inviteMember(email, role);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await api.createWorkspaceInvite(email.trim());
       setSuccess(true);
       setTimeout(() => {
         navigate({ to: '/app/members', replace: true });
@@ -64,7 +59,7 @@ function InviteMemberPage() {
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">Invite Team Member</h2>
           <p className="text-muted-foreground">
-            Invite someone to join your workspace and collaborate on projects
+            Send a secure workspace invitation. The recipient will create their account from the emailed link.
           </p>
           
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -80,20 +75,6 @@ function InviteMemberPage() {
               />
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value as 'admin' | 'member' | 'viewer')}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="admin">Admin</option>
-                <option value="member">Member</option>
-                <option value="viewer">Viewer</option>
-              </select>
-            </div>
-            
             {error && (
               <p className="text-sm text-destructive">{error}</p>
             )}
@@ -107,7 +88,7 @@ function InviteMemberPage() {
             </Button>
             
             <p className="text-center text-sm text-muted-foreground">
-              <Button variant="ghost" className="p-0 h-auto" onClick={() => navigate({ to: '/app/members', replace: true })}>
+              <Button type="button" variant="ghost" className="p-0 h-auto" onClick={() => navigate({ to: '/app/members', replace: true })}>
                 Cancel
               </Button>
             </p>

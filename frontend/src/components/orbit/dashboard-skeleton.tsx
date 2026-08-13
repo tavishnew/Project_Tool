@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { SpotlightCard } from "@/components/orbit/spotlight-card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface DashboardSkeletonProps {
   /** "dashboard" also renders the recent tasks / backlog / quick actions column. */
@@ -58,32 +58,21 @@ export function DashboardSkeleton({
   projectCardCount = 3,
 }: DashboardSkeletonProps) {
   return (
-<<<<<<< HEAD
-    <div className="space-y-8" aria-busy="true" aria-live="polite">
+    <div className="space-y-8" aria-busy="true" aria-live="polite" data-testid="dashboard-skeleton">
       <span className="sr-only">Loading…</span>
 
-      <header className="animate-pulse">
+      <header className="animate-pulse" data-testid="skeleton-header">
         <div className="mb-2 h-4 w-40 rounded bg-muted" />
         <div className="h-8 w-72 rounded bg-muted" />
       </header>
 
-      <section aria-label="Stats" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-=======
-    <div className="space-y-8" data-testid="dashboard-skeleton">
-      <header className="animate-pulse" data-testid="skeleton-header">
-        <div className="h-4 w-1/4 bg-muted rounded mb-2" />
-        <div className="h-8 w-1/2 bg-muted rounded" />
-      </header>
-
-      {/* Stats Row */}
       <section aria-label="Stats" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-testid="skeleton-stats">
->>>>>>> 2766c08 (final updates)
-        {Array.from({ length: 4 }).map((_, i) => (
+        {Array.from({ length: 4 }).map((_, index) => (
           <motion.div
-            key={i}
+            key={index}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.04 }}
+            transition={{ duration: 0.3, delay: index * 0.04 }}
             className="animate-pulse rounded-2xl border border-border bg-card p-5"
           >
             <div className="flex items-center justify-between">
@@ -97,40 +86,30 @@ export function DashboardSkeleton({
 
       {variant === "projects" ? (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: projectCardCount }).map((_, i) => (
-            <ProjectCardSkeleton key={i} index={i} />
+          {Array.from({ length: projectCardCount }).map((_, index) => (
+            <ProjectCardSkeleton key={index} index={index} />
           ))}
         </section>
       ) : (
         <div className="grid gap-6 lg:grid-cols-3">
-<<<<<<< HEAD
-          <section className="lg:col-span-2">
-=======
-          {/* Recent Projects / Projects Grid */}
-          <section className={projectGridColSpan} data-testid="skeleton-project-grid">
->>>>>>> 2766c08 (final updates)
+          <section className="lg:col-span-2" data-testid="skeleton-project-grid">
             <div className="mb-4 flex items-center justify-between">
               <div className="h-6 w-40 animate-pulse rounded bg-muted" />
               <div className="h-5 w-20 animate-pulse rounded bg-muted" />
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              {Array.from({ length: projectCardCount }).map((_, i) => (
-                <ProjectCardSkeleton key={i} index={i} />
+              {Array.from({ length: projectCardCount }).map((_, index) => (
+                <ProjectCardSkeleton key={index} index={index} />
               ))}
             </div>
           </section>
 
-<<<<<<< HEAD
-          <section className="space-y-6">
-=======
-          {/* Quick Actions area placeholder */}
           <section className="space-y-6" data-testid="skeleton-side-panel">
->>>>>>> 2766c08 (final updates)
             <div>
               <div className="h-6 w-32 animate-pulse rounded bg-muted" />
               <div className="mt-4 space-y-2">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <TaskRowSkeleton key={i} />
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <TaskRowSkeleton key={index} />
                 ))}
               </div>
             </div>
@@ -138,24 +117,19 @@ export function DashboardSkeleton({
             <div>
               <div className="h-6 w-48 animate-pulse rounded bg-muted" />
               <div className="mt-4 space-y-2">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <TaskRowSkeleton key={i} />
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <TaskRowSkeleton key={index} />
                 ))}
               </div>
             </div>
 
-<<<<<<< HEAD
-            <Card className="animate-pulse">
-=======
-            {/* Quick Actions */}
             <Card className="animate-pulse" data-testid="skeleton-quick-actions">
->>>>>>> 2766c08 (final updates)
               <CardHeader>
                 <div className="h-5 w-32 rounded bg-muted" />
               </CardHeader>
               <CardContent className="space-y-3">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-10 w-full rounded-md bg-muted" />
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="h-10 w-full rounded-md bg-muted" />
                 ))}
               </CardContent>
             </Card>

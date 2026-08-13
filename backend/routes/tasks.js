@@ -1,6 +1,7 @@
 import express from 'express';
 import { requireAuth, requireTaskMember } from '../auth.js';
 import { db } from '../db.js';
+import { logProjectActivity } from '../lib/audit.js';
 
 const router = express.Router();
 router.use(requireAuth);
@@ -29,6 +30,11 @@ export function serializeTask(row) {
 
 // PATCH /api/tasks/:id — update any allowed field
 router.patch('/:id', requireTaskMember, async (req, res) => {
+  const { rows: currentRows } = await db.query(
+    'SELECT project_id, title, description, status, priority, assignee_id, due_date FROM tasks WHERE id = $1',
+    [req.params.id]
+  );
+  const currentTask = currentRows[0];
   const { status, assigneeId, assignee_id, dueDate, priority, title, description } = req.body || {};
   const sets = [];
   const vals = [];
@@ -71,12 +77,41 @@ router.patch('/:id', requireTaskMember, async (req, res) => {
     `UPDATE tasks SET ${sets.join(', ')} WHERE id = $${vals.length} RETURNING *`,
     vals
   );
-  res.json({ task: serializeTask(rows[0]) });
+  const updatedTask = rows[0];
+  const changedFields = sets.map((set) => set.split(' ')[0]);
+  await logProjectActivity({
+    projectId: currentTask.project_id,
+    actorId: req.user.id,
+    action: 'task.updated',
+    entityType: 'task',
+    entityId: updatedTask.id,
+    metadata: { changedFields },
+  });
+  if (currentTask.status !== updatedTask.status) {
+    await logProjectActivity({
+      projectId: currentTask.project_id,
+      actorId: req.user.id,
+      action: 'task.status_changed',
+      entityType: 'task',
+      entityId: updatedTask.id,
+      metadata: { from: currentTask.status, to: updatedTask.status },
+    });
+  }
+  res.json({ task: serializeTask(updatedTask) });
 });
 
 // DELETE /api/tasks/:id
 router.delete('/:id', requireTaskMember, async (req, res) => {
-  await db.query('DELETE FROM tasks WHERE id = $1', [req.params.id]);
+  const { rows } = await db.query('DELETE FROM tasks WHERE id = $1 RETURNING id, project_id, title', [req.params.id]);
+  const deletedTask = rows[0];
+  await logProjectActivity({
+    projectId: deletedTask.project_id,
+    actorId: req.user.id,
+    action: 'task.deleted',
+    entityType: 'task',
+    entityId: deletedTask.id,
+    metadata: { title: deletedTask.title },
+  });
   res.json({ ok: true });
 });
 

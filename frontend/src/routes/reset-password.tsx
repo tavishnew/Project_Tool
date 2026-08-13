@@ -101,17 +101,8 @@ function ResetPasswordPage() {
     }
     setLoading(true);
     try {
-      // Token is now in URL, not body
-      await fetch(`/api/auth/reset-password/${token!}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      }).then(res => {
-        if (!res.ok) throw new Error('Failed to reset password');
-        return res.json();
-      });
-      toast.success("Password has been reset. You can now sign in.");
+      const result = await api.resetPassword(token!, password);
+      toast.success(result.message || "Password has been reset. You can now sign in.");
       navigate({ to: "/login" });
     } catch (err: any) {
       toast.error(err.message || "Failed to reset password");

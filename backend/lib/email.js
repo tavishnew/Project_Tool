@@ -1,366 +1,171 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const APP_URL = process.env.APP_URL || 'http://localhost:5173';
+const APP_URL = process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:5173';
 
-function getResendClient() {
-  if (!process.env.RESEND_API_KEY) {
-    return null;
+let transporter;
+
+function smtpConfig() {
+  const required = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'EMAIL_FROM'];
+  const missing = required.filter((name) => !process.env[name]);
+
+  if (missing.length) {
+    return { missing };
   }
-  return new Resend(process.env.RESEND_API_KEY);
+
+  const port = Number.parseInt(process.env.SMTP_PORT, 10);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    return { missing: ['SMTP_PORT (a valid port number)'] };
+  }
+
+  return {
+    host: process.env.SMTP_HOST,
+    port,
+    secure: port === 465,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    from: process.env.EMAIL_FROM,
+  };
 }
 
-/**
- * Send workspace invitation email via Resend
- * @param {Object} data
- * @param {string} data.recipientEmail
- * @param {string} data.inviterName
- * @param {string} data.workspaceName
- * @param {string} data.invitationToken
- * @returns {Promise<{success: boolean, error?: string}>}
- */
-export async function sendWorkspaceInvite(data) {
-  const { recipientEmail, inviterName, workspaceName, invitationToken } = data;
-
-  // Validate required env vars
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('[EMAIL] RESEND_API_KEY not set, skipping email send');
-    return { success: false, error: 'RESEND_API_KEY not configured' };
-  }
-
-  const inviteUrl = `${APP_URL}/invite/${invitationToken}`;
-
-  try {
-    const resend = getResendClient();
-    const { data: emailData, error } = await resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: recipientEmail,
-      subject: `You're invited to collaborate on ${workspaceName}`,
-      html: generateInviteHtml({
-        inviterName,
-        workspaceName,
-        inviteUrl,
-      }),
-      text: generateInviteText({
-        inviterName,
-        workspaceName,
-        inviteUrl,
-      }),
+function getTransporter(config) {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: config.host,
+      port: config.port,
+      secure: config.secure,
+      auth: config.auth,
     });
-
-    if (error) {
-      console.error('[EMAIL] Failed to send invitation:', error);
-      return { success: false, error: error.message };
-    }
-
-    console.log(`[EMAIL] Invitation sent to ${recipientEmail} (id: ${emailData?.id})`);
-    return { success: true };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('[EMAIL] Exception sending invitation:', message);
-    return { success: false, error: message };
   }
+  return transporter;
 }
 
-function generateInviteHtml({ inviterName, workspaceName, inviteUrl }) {
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0; padding: 32px; text-align: center;">
-    <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">You're Invited</h1>
-    <p style="color: rgba(255,255,255,0.9); margin: 12px 0 0; font-size: 16px;">Join <strong>${escapeHtml(workspaceName)}</strong> workspace</p>
-  </div>
-
-  <div style="background: #ffffff; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px; padding: 32px;">
-    <p style="font-size: 16px; margin: 0 0 16px;">
-      Hi there,
-    </p>
-
-    <p style="font-size: 16px; margin: 0 0 24px;">
-      <strong>${escapeHtml(inviterName)}</strong> invited you to join <strong>${escapeHtml(workspaceName)}</strong> — a workspace for managing projects and tasks together.
-    </p>
-
-    <div style="text-align: center; margin: 32px 0;">
-      <a href="${escapeHtml(inviteUrl)}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);">
-        Accept Invitation
-      </a>
-    </div>
-
-    <p style="font-size: 14px; color: #6b7280; margin: 0 0 24px; text-align: center;">
-      Or copy this link:<br>
-      <a href="${escapeHtml(inviteUrl)}" style="color: #667eea; word-break: break-all;">${escapeHtml(inviteUrl)}</a>
-    </p>
-
-    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
-
-    <div style="font-size: 13px; color: #9ca3af; line-height: 1.8;">
-      <p style="margin: 0 0 8px;"><strong>Important:</strong> This invitation expires in <strong>7 days</strong>.</p>
-      <p style="margin: 0 0 8px;">If you don't have an account yet, you'll create one when you accept.</p>
-      <p style="margin: 0;">Didn't expect this invitation? You can safely ignore this email.</p>
-    </div>
-  </div>
-
-  <div style="text-align: center; margin-top: 24px; font-size: 12px; color: #9ca3af;">
-    <p style="margin: 0;">© ${new Date().getFullYear()} Orbit. All rights reserved.</p>
-  </div>
-</body>
-</html>
-  `.trim();
-}
-
-function generateInviteText({ inviterName, workspaceName, inviteUrl }) {
-  return `
-You're invited to join ${workspaceName}
-
-Hi there,
-
-${inviterName} invited you to join ${workspaceName} — a workspace for managing projects and tasks together.
-
-Accept your invitation: ${inviteUrl}
-
-This invitation expires in 7 days. If you don't have an account yet, you'll create one when you accept.
-
-Didn't expect this invitation? You can safely ignore this email.
-
-© ${new Date().getFullYear()} Orbit. All rights reserved.
-  `.trim();
-}
-
-/**
- * Send project invitation email via Resend
- * @param {Object} data
- * @param {string} data.recipientEmail
- * @param {string} data.inviterName
- * @param {string} data.projectName
- * @param {string} data.inviteUrl
- * @returns {Promise<{success: boolean, error?: string}>}
- */
-export async function sendProjectInvite(data) {
-  const { recipientEmail, inviterName, projectName, inviteUrl } = data;
-
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('[EMAIL] RESEND_API_KEY not set, skipping email send');
-    return { success: false, error: 'RESEND_API_KEY not configured' };
+async function sendEmail({ recipientEmail, subject, html, text }) {
+  const config = smtpConfig();
+  if (config.missing) {
+    const error = `SMTP email is not configured: missing ${config.missing.join(', ')}`;
+    console.warn(`[EMAIL] ${error}`);
+    return { success: false, error };
   }
 
   try {
-    const resend = getResendClient();
-    const { data: emailData, error } = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+    const result = await getTransporter(config).sendMail({
+      from: config.from,
       to: recipientEmail,
-      subject: `You're invited to collaborate on ${projectName}`,
-      html: generateProjectInviteHtml({ inviterName, projectName, inviteUrl }),
-      text: generateProjectInviteText({ inviterName, projectName, inviteUrl }),
+      subject,
+      html,
+      text,
     });
-
-    if (error) {
-      console.error('[EMAIL] Failed to send project invite:', error);
-      return { success: false, error: error.message };
-    }
-
-    console.log(`[EMAIL] Project invite sent to ${recipientEmail} (id: ${emailData?.id})`);
-    return { success: true };
+    console.log(`[EMAIL] Sent message to ${recipientEmail} (id: ${result.messageId})`);
+    return { success: true, messageId: result.messageId };
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('[EMAIL] Exception sending project invite:', message);
-    return { success: false, error: message };
+    const error = err instanceof Error ? err.message : 'Unknown email delivery error';
+    console.error(`[EMAIL] Failed to send message to ${recipientEmail}: ${error}`);
+    return { success: false, error };
   }
 }
 
-function generateProjectInviteHtml({ inviterName, projectName, inviteUrl }) {
+function invitationHtml({ inviterName, subjectName, invitationUrl, isWorkspace = false }) {
+  const destination = isWorkspace ? 'workspace' : 'project';
   return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0; padding: 32px; text-align: center;">
-    <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">You're Invited</h1>
-    <p style="color: rgba(255,255,255,0.9); margin: 12px 0 0; font-size: 16px;">Join project <strong>${escapeHtml(projectName)}</strong></p>
-  </div>
-
-  <div style="background: #ffffff; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px; padding: 32px;">
-    <p style="font-size: 16px; margin: 0 0 16px;">Hi there,</p>
-
-    <p style="font-size: 16px; margin: 0 0 24px;">
-      <strong>${escapeHtml(inviterName)}</strong> invited you to join <strong>${escapeHtml(projectName)}</strong> — a project in Orbit for managing tasks together.
-    </p>
-
-    <div style="text-align: center; margin: 32px 0;">
-      <a href="${escapeHtml(inviteUrl)}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);">
-        Accept Invitation
-      </a>
-    </div>
-
-    <p style="font-size: 14px; color: #6b7280; margin: 0 0 24px; text-align: center;">
-      Or copy this link:<br>
-      <a href="${escapeHtml(inviteUrl)}" style="color: #667eea; word-break: break-all;">${escapeHtml(inviteUrl)}</a>
-    </p>
-
-    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
-
-    <div style="font-size: 13px; color: #9ca3af; line-height: 1.8;">
-      <p style="margin: 0 0 8px;"><strong>Important:</strong> This invitation expires in <strong>7 days</strong>.</p>
-      <p style="margin: 0 0 8px;">If you don't have an account yet, you'll create one when you accept.</p>
-      <p style="margin: 0;">Didn't expect this invitation? You can safely ignore this email.</p>
-    </div>
-  </div>
-
-  <div style="text-align: center; margin-top: 24px; font-size: 12px; color: #9ca3af;">
-    <p style="margin: 0;">© ${new Date().getFullYear()} Orbit. All rights reserved.</p>
-  </div>
-</body>
-</html>
-  `.trim();
+<!doctype html>
+<html lang="en">
+  <body style="font-family:Arial,sans-serif;line-height:1.5;color:#1f2937;max-width:600px;margin:0 auto;padding:24px">
+    <h1 style="margin:0 0 16px">You are invited</h1>
+    <p><strong>${escapeHtml(inviterName)}</strong> invited you to join the ${destination} <strong>${escapeHtml(subjectName)}</strong>.</p>
+    <p><a href="${escapeHtml(invitationUrl)}" style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:12px 18px;border-radius:6px">Accept invitation</a></p>
+    <p style="font-size:14px;color:#6b7280">This invitation expires in seven days. If you were not expecting it, you can safely ignore this email.</p>
+    <p style="font-size:13px;color:#6b7280;word-break:break-all">${escapeHtml(invitationUrl)}</p>
+  </body>
+</html>`.trim();
 }
 
-function generateProjectInviteText({ inviterName, projectName, inviteUrl }) {
-  return `
-You're invited to join ${projectName}
-
-Hi there,
-
-${inviterName} invited you to join ${projectName} — a project in Orbit for managing tasks together.
-
-Accept your invitation: ${inviteUrl}
-
-This invitation expires in 7 days. If you don't have an account yet, you'll create one when you accept.
-
-Didn't expect this invitation? You can safely ignore this email.
-
-© ${new Date().getFullYear()} Orbit. All rights reserved.
-  `.trim();
+function invitationText({ inviterName, subjectName, invitationUrl, isWorkspace = false }) {
+  const destination = isWorkspace ? 'workspace' : 'project';
+  return `${inviterName} invited you to join the ${destination} ${subjectName}.\n\nAccept invitation: ${invitationUrl}\n\nThis invitation expires in seven days. If you were not expecting it, you can safely ignore this email.`;
 }
 
-function escapeHtml(text) {
-  return text
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"')
+/** Send a project invitation through the configured SMTP service. */
+export async function sendProjectInvite({ recipientEmail, inviterName, projectName, inviteUrl }) {
+  return sendEmail({
+    recipientEmail,
+    subject: `You are invited to collaborate on ${projectName}`,
+    html: invitationHtml({ inviterName, subjectName: projectName, invitationUrl: inviteUrl }),
+    text: invitationText({ inviterName, subjectName: projectName, invitationUrl: inviteUrl }),
+  });
+}
+
+/** Send a workspace invitation through the configured SMTP service. */
+export async function sendWorkspaceInvite({ recipientEmail, inviterName, workspaceName, invitationToken }) {
+  const inviteUrl = `${APP_URL}/workspace-invite/${invitationToken}`;
+  return sendEmail({
+    recipientEmail,
+    subject: `You are invited to collaborate on ${workspaceName}`,
+    html: invitationHtml({
+      inviterName,
+      subjectName: workspaceName,
+      invitationUrl: inviteUrl,
+      isWorkspace: true,
+    }),
+    text: invitationText({
+      inviterName,
+      subjectName: workspaceName,
+      invitationUrl: inviteUrl,
+      isWorkspace: true,
+    }),
+  });
+}
+
+/** Send a short-lived code for the direct password-update flow. */
+export async function sendPasswordUpdateCodeEmail({ recipientEmail, userName, code }) {
+  return sendEmail({
+    recipientEmail,
+    subject: 'Your password update code',
+    html: `
+<!doctype html>
+<html lang="en">
+  <body style="font-family:Arial,sans-serif;line-height:1.5;color:#1f2937;max-width:600px;margin:0 auto;padding:24px">
+    <h1 style="margin:0 0 16px">Verify your password update</h1>
+    <p>Hi ${escapeHtml(userName)},</p>
+    <p>Enter this one-time code in Orbit to choose a new password:</p>
+    <p style="font-size:28px;font-weight:700;letter-spacing:6px;margin:24px 0">${escapeHtml(code)}</p>
+    <p style="font-size:14px;color:#6b7280">This code expires in 15 minutes and can only be used once. If you did not request a password update, you can safely ignore this email.</p>
+  </body>
+</html>`.trim(),
+    text: `Hi ${userName},\n\nEnter this one-time code in Orbit to choose a new password: ${code}\n\nThis code expires in 15 minutes and can only be used once. If you did not request a password update, you can safely ignore this email.`,
+  });
+}
+
+/** Send a password-reset link through the configured SMTP service. */
+export async function sendPasswordResetEmail({ recipientEmail, userName, resetToken }) {
+  const resetUrl = `${APP_URL}/reset-password/${resetToken}`;
+  return sendEmail({
+    recipientEmail,
+    subject: 'Reset your password',
+    html: `
+<!doctype html>
+<html lang="en">
+  <body style="font-family:Arial,sans-serif;line-height:1.5;color:#1f2937;max-width:600px;margin:0 auto;padding:24px">
+    <h1 style="margin:0 0 16px">Reset your password</h1>
+    <p>Hi ${escapeHtml(userName)},</p>
+    <p>We received a request to reset your password. Use the link below to choose a new password.</p>
+    <p><a href="${escapeHtml(resetUrl)}" style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:12px 18px;border-radius:6px">Reset password</a></p>
+    <p style="font-size:14px;color:#6b7280">This link expires in 30 minutes and can only be used once. If you did not request a reset, you can safely ignore this email.</p>
+    <p style="font-size:13px;color:#6b7280;word-break:break-all">${escapeHtml(resetUrl)}</p>
+  </body>
+</html>`.trim(),
+    text: `Hi ${userName},\n\nWe received a request to reset your password. Use this link to choose a new password: ${resetUrl}\n\nThis link expires in 30 minutes and can only be used once. If you did not request a reset, you can safely ignore this email.`,
+  });
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
 
-/**
- * Send password reset email via Resend
- * @param {Object} data
- * @param {string} data.recipientEmail
- * @param {string} data.userName
- * @param {string} data.resetToken
- * @returns {Promise<{success: boolean, error?: string}>}
- */
-export async function sendPasswordResetEmail(data) {
-  const { recipientEmail, userName, resetToken } = data;
-
-  // Validate required env vars
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('[EMAIL] RESEND_API_KEY not set, skipping email send');
-    return { success: false, error: 'RESEND_API_KEY not configured' };
-  }
-
-  const resetUrl = `${APP_URL}/reset-password/${resetToken}`;
-
-  try {
-    const resend = getResendClient();
-    const { data: emailData, error } = await resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: recipientEmail,
-      subject: 'Reset your password',
-      html: generateResetPasswordHtml({
-        userName,
-        resetUrl,
-      }),
-      text: generateResetPasswordText({
-        userName,
-        resetUrl,
-      }),
-    });
-
-    if (error) {
-      console.error('[EMAIL] Failed to send password reset:', error);
-      return { success: false, error: error.message };
-    }
-
-    console.log(`[EMAIL] Password reset sent to ${recipientEmail} (id: ${emailData?.id})`);
-    return { success: true };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('[EMAIL] Exception sending password reset:', message);
-    return { success: false, error: message };
-  }
-}
-
-function generateResetPasswordHtml({ userName, resetUrl }) {
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 600px; margin: 0 auto; padding: 20px;">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0; padding: 32px; text-align: center;">
-    <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">Reset Your Password</h1>
-    <p style="color: rgba(255,255,255,0.9); margin: 12px 0 0; font-size: 16px;">Secure link to regain access to your account</p>
-  </div>
-
-  <div style="background: #ffffff; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px; padding: 32px;">
-    <p style="font-size: 16px; margin: 0 0 16px;">
-      Hi ${escapeHtml(userName)},
-    </p>
-
-    <p style="font-size: 16px; margin: 0 0 24px;">
-      You requested a password reset for your Orbit account. Click the button below to create a new password:
-    </p>
-
-    <div style="text-align: center; margin: 32px 0;">
-      <a href="${escapeHtml(resetUrl)}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);">
-        Reset Password
-      </a>
-    </div>
-
-    <p style="font-size: 14px; color: #6b7280; margin: 0 0 24px; text-align: center;">
-      Or copy this link:<br>
-      <a href="${escapeHtml(resetUrl)}" style="color: #667eea; word-break: break-all;">${escapeHtml(resetUrl)}</a>
-    </p>
-
-    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
-
-    <div style="font-size: 13px; color: #9ca3af; line-height: 1.8;">
-      <p style="margin: 0 0 8px;"><strong>Important:</strong> This link expires in <strong>30 minutes</strong>.</p>
-      <p style="margin: 0 0 8px;">If you didn't request this reset, you can safely ignore this email. Your password will remain unchanged.</p>
-      <p style="margin: 0;">For security, this link can only be used once.</p>
-    </div>
-  </div>
-
-  <div style="text-align: center; margin-top: 24px; font-size: 12px; color: #9ca3af;">
-    <p style="margin: 0;">© ${new Date().getFullYear()} Orbit. All rights reserved.</p>
-  </div>
-</body>
-</html>
-  `.trim();
-}
-
-function generateResetPasswordText({ userName, resetUrl }) {
-  return `
-Reset Your Password
-
-Hi ${userName},
-
-You requested a password reset for your Orbit account. Click the link below to create a new password:
-
-${resetUrl}
-
-This link expires in 30 minutes. If you didn't request this reset, you can safely ignore this email. Your password will remain unchanged.
-
-For security, this link can only be used once.
-
-© ${new Date().getFullYear()} Orbit. All rights reserved.
-  `.trim();
-}
+export { sendEmail };

@@ -19,11 +19,24 @@ const filterOptions = [
 ] as const;
 
 export function SidebarFilters({ filters, onChange }: SidebarFiltersProps) {
+  const hasActiveFilters = Object.values(filters).some(Boolean);
+
   return (
     <div className="space-y-2 p-2" data-testid="sidebar-filters">
-      <p className="px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        Filters
-      </p>
+      <div className="flex items-center justify-between px-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Filters
+        </p>
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={() => onChange({ myTasks: false, overdue: false, highPriority: false })}
+            className="rounded text-xs font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+          >
+            Clear
+          </button>
+        )}
+      </div>
       {filterOptions.map(({ key, label, icon: Icon }) => (
         <label
           key={key}

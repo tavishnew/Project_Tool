@@ -13,32 +13,27 @@ export function ProgressRing({
   color?: string;
   className?: string;
 }) {
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const pct = Math.max(0, Math.min(1, value));
-  const percent = Math.round(pct * 100);
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const normalizedValue = Math.max(0, Math.min(1, value));
+  const percent = Math.round(normalizedValue * 100);
+
   return (
     <svg
-<<<<<<< HEAD
+      data-testid="progress-ring"
       width={size}
       height={size}
-      className="shrink-0"
+      className={cn("shrink-0", className)}
       role="progressbar"
       aria-valuenow={percent}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-label={`${percent}% complete`}
-=======
-      data-testid="progress-ring"
-      width={size}
-      height={size}
-      className={cn("shrink-0", className)}
->>>>>>> 2766c08 (final updates)
     >
       <circle
         cx={size / 2}
         cy={size / 2}
-        r={r}
+        r={radius}
         fill="none"
         stroke="var(--color-border)"
         strokeWidth={stroke}
@@ -46,13 +41,13 @@ export function ProgressRing({
       <circle
         cx={size / 2}
         cy={size / 2}
-        r={r}
+        r={radius}
         fill="none"
         stroke={color}
         strokeWidth={stroke}
         strokeLinecap="round"
-        strokeDasharray={c}
-        strokeDashoffset={c * (1 - pct)}
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference * (1 - normalizedValue)}
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
         style={{ transition: "stroke-dashoffset 400ms ease" }}
       />

@@ -66,13 +66,14 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['Manrope', 'system-ui', 'sans-serif'],
-        display: ['Sora', 'system-ui', 'sans-serif'],
+        sans: ['Spectral', 'Georgia', 'serif'],
+        ui: ['Source Sans 3', 'system-ui', 'sans-serif'],
+        display: ['Fraunces', 'Georgia', 'serif'],
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
       boxShadow: {
-        card: '0 1px 2px rgba(20,27,45,0.04), 0 1px 0 rgba(20,27,45,0.03)',
-        pop: '0 18px 40px -16px rgba(21,43,71,0.35)',
+        card: '2px 3px 0 rgba(44,33,24,0.06)',
+        pop: '5px 7px 0 rgba(44,33,24,0.12)',
       },
       keyframes: {
         'orbit-rotate': {

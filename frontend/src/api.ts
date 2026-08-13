@@ -1,5 +1,13 @@
 const BASE = '/api';
 
+type ApiError = Error & {
+  status?: number;
+  retryAfter?: number;
+  attemptCount?: number;
+  attemptsRemaining?: number;
+  recoveryAvailable?: boolean;
+};
+
 async function req<T = any>(path: string, opts: RequestInit = {}): Promise<T> {
   const res = await fetch(BASE + path, {
     credentials: 'include',
@@ -8,7 +16,14 @@ async function req<T = any>(path: string, opts: RequestInit = {}): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Request failed (${res.status})`);
+    const error = new Error(body.error || `Request failed (${res.status})`) as ApiError;
+    error.status = res.status;
+    error.attemptCount = Number.isFinite(Number(body.attemptCount)) ? Number(body.attemptCount) : undefined;
+    error.attemptsRemaining = Number.isFinite(Number(body.attemptsRemaining)) ? Number(body.attemptsRemaining) : undefined;
+    error.recoveryAvailable = body.recoveryAvailable === true;
+    const retryAfter = Number(res.headers.get('retry-after'));
+    if (Number.isFinite(retryAfter) && retryAfter > 0) error.retryAfter = retryAfter;
+    throw error;
   }
   if (res.status === 204) return null as T;
   return res.json();
@@ -24,11 +39,17 @@ export const api = {
     req('/auth/register', json({ name, email, password, role })),
   logout: () => req('/auth/logout', { method: 'POST' }),
 
-  // Password reset
+  // Direct in-page password update after the recovery threshold.
+  requestPasswordUpdateCode: (email: string) =>
+    req<{ success: boolean; message: string }>('/auth/password-update-code', json({ email })),
+  completePasswordUpdate: (email: string, code: string, password: string, passwordConfirmation: string) =>
+    req<{ success: boolean; message: string }>('/auth/password-update', json({ email, code, password, passwordConfirmation })),
+
+  // Legacy password-reset support for previously issued reset links.
   forgotPassword: (email: string) =>
     req('/auth/forgot-password', json({ email })),
   resetPassword: (token: string, password: string) =>
-    req('/auth/reset-password', json({ token, password })),
+    req<{ success: boolean; message: string }>(`/auth/reset-password/${encodeURIComponent(token)}`, json({ password })),
   validateResetToken: (token: string) =>
     req<{ valid: boolean; email?: string; error?: string }>(`/auth/reset-password/${token}`, { method: 'GET' }),
 
@@ -53,15 +74,17 @@ export const api = {
   listProjectMembers: (projectId: string) =>
     req<{ members: import('./types').Member[] }>(`/projects/${projectId}/members`),
 
-  // Project Invites (admin + owner)
-  createInvite: (id: string, email?: string) =>
-    req<{ invite: import('./types').Invite }>(`/projects/${id}/invites`, json({ email })),
+  // Project invitations
+  createInvite: (id: string, email: string, role: 'member' | 'admin' = 'member') =>
+    req<import('./types').ProjectInvitationCreateResult>(`/projects/${id}/invites`, json({ email, role })),
   listInvites: (id: string) =>
-    req<{ invites: import('./types').Invite[] }>(`/projects/${id}/invites`),
+    req<{ invites: import('./types').ProjectInvitation[] }>(`/projects/${id}/invites`),
   revokeInvite: (id: string, inviteId: string) =>
     req(`/projects/${id}/invites/${inviteId}`, { method: 'DELETE' }),
-  acceptInvite: (token: string) =>
-    req<{ ok: boolean; projectId: string }>(`/projects/invites/${token}/accept`, { method: 'POST' }),
+  getProjectInvitation: (token: string) =>
+    req<{ invitation: import('./types').ProjectInvitationPreview }>(`/invitations/${token}`),
+  acceptProjectInvitation: (token: string) =>
+    req<{ ok: boolean; projectId: string; role: 'member' | 'admin' }>(`/invitations/${token}/accept`, { method: 'POST' }),
 
   // Workspace Invites (email-based invite flow)
   createWorkspaceInvite: (email: string) =>
@@ -70,6 +93,8 @@ export const api = {
     req<{ invites: import('./types').WorkspaceInvite[] }>('/workspace/invites'),
   cancelWorkspaceInvite: (inviteId: string) =>
     req(`/workspace/invites/${inviteId}`, { method: 'DELETE' }),
+  acceptWorkspaceInvite: (token: string, name: string, password: string) =>
+    req<{ ok: boolean; email: string }>(`/workspace/invites/${encodeURIComponent(token)}/accept`, json({ name, password })),
 
   listTasks: (id: string, params?: { status?: string; assignee?: string }) => {
     const q = new URLSearchParams();
@@ -86,10 +111,14 @@ export const api = {
     req(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteTask: (id: string) => req(`/tasks/${id}`, { method: 'DELETE' }),
 
-  // New: get all users (for workspace members)
-  getUsers: () => req<{ users: import('./types').User[] }>('/users'),
 
-  // Update user profile
-  updateProfile: (data: { name?: string; avatar_url?: string }) =>
+  // Account management
+  updateProfile: (data: { name?: string; avatar_url?: string | null; email?: string; currentPassword?: string }) =>
     req<{ user: import('./types').User }>('/auth/profile', { method: 'PATCH', body: JSON.stringify(data) }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    req<{ ok: boolean; message: string }>('/auth/change-password', json({ currentPassword, newPassword })),
+  getAccountDeletionOptions: () =>
+    req<{ ownedProjects: import('./types').OwnedProjectForDeletion[] }>('/auth/account-deletion-options'),
+  deleteAccount: (currentPassword: string, transfers: Array<{ projectId: string; newOwnerId: string }>) =>
+    req<{ ok: boolean }>('/auth/account', { method: 'DELETE', body: JSON.stringify({ currentPassword, transfers }) }),
 };

@@ -1,69 +1,75 @@
-<<<<<<< HEAD
 import { useQuery } from "@tanstack/react-query";
-import { FolderKanban, Clock, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Clock, FolderKanban } from "lucide-react";
 import { api } from "@/api";
 import type { Member, Project, Task } from "@/types";
 
 const MEMBER_COLORS = ["#ff5a4e", "#f59e0b", "#10b981", "#6366f1", "#ec4899", "#0ea5e9"];
 
+export interface DashboardFilters {
+  myTasks: boolean;
+  overdue: boolean;
+  highPriority: boolean;
+}
+
+interface ProjectsOverviewOptions {
+  filters?: DashboardFilters;
+  userId?: string;
+}
+
 export function generateMemberColor(name: string, fallbackIndex: number) {
   if (!name) return MEMBER_COLORS[fallbackIndex % MEMBER_COLORS.length];
+
   let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  for (let index = 0; index < name.length; index += 1) {
+    hash = name.charCodeAt(index) + ((hash << 5) - hash);
   }
   return MEMBER_COLORS[Math.abs(hash) % MEMBER_COLORS.length];
 }
-=======
-import { useQuery } from '@tanstack/react-query';
-import { FolderKanban, Clock, CheckCircle2 } from 'lucide-react';
-import { api } from '@/api';
-import type { Project, Task, Member } from '@/types';
->>>>>>> c114262 (api fixed)
 
-export function useProjectsOverview() {
+function isOverdue(task: Task) {
+  if (!task.due_date || task.status === "done") return false;
+
+  const dueDate = new Date(task.due_date);
+  if (Number.isNaN(dueDate.getTime())) return false;
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  return dueDate.getTime() < startOfToday.getTime();
+}
+
+export function useProjectsOverview({ filters, userId }: ProjectsOverviewOptions = {}) {
   const {
     data: projectsData,
     isLoading: projectsLoading,
     error: projectsError,
+    refetch: refetchProjects,
   } = useQuery({
     queryKey: ["projects"],
     queryFn: () => api.listProjects(),
   });
 
-<<<<<<< HEAD
   const projects: Project[] = projectsData?.projects ?? [];
+  const projectIds = projects.map((project) => project.id);
 
   const {
     data: tasksData,
     isLoading: tasksLoading,
     error: tasksError,
+    refetch: refetchTasks,
   } = useQuery({
-    queryKey: ["tasks", projects.map((p) => p.id)],
+    queryKey: ["tasks", projectIds],
     queryFn: async () => {
-      if (projects.length === 0) return { tasks: [] as Task[] };
-      const results = await Promise.all(projects.map((p) => api.listTasks(p.id)));
-      return { tasks: results.flatMap((r) => r.tasks ?? []) };
-=======
-  // Fetch all tasks for the projects (dependent on projects)
-  const { data: tasksData, isLoading: isTasksLoading, error: tasksError } = useQuery({
-    queryKey: ['tasks', projectsData?.projects?.map((p: Project) => p.id) ?? []],
-    queryFn: async () => {
-      const projects = projectsData?.projects ?? [];
-      if (projects.length === 0) return { tasks: [] as Task[] };
-      const tasksPromises = projects.map((p: Project) => api.listTasks(p.id));
-      const results = await Promise.all(tasksPromises);
-      return { tasks: results.flatMap((r) => r.tasks ?? []) as Task[] };
->>>>>>> c114262 (api fixed)
+      const results = await Promise.all(projects.map((project) => api.listTasks(project.id)));
+      return { tasks: results.flatMap((result) => result.tasks ?? []) as Task[] };
     },
-    enabled: !!projects.length,
+    enabled: projects.length > 0,
   });
 
-  // Independent of projects so it starts in parallel on mount.
   const {
     data: membersData,
     isLoading: membersLoading,
     error: membersError,
+    refetch: refetchMembers,
   } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
@@ -72,85 +78,55 @@ export function useProjectsOverview() {
     },
   });
 
-<<<<<<< HEAD
-  const tasks: Task[] = tasksData?.tasks ?? [];
+  const allTasks: Task[] = tasksData?.tasks ?? [];
   const members: Member[] = (membersData ?? []).map((member, index) => ({
-=======
-  // Process members to add colors
-  const membersWithColors: Member[] = (membersData ?? []).map((member, index) => ({
->>>>>>> c114262 (api fixed)
     ...member,
     color: member.color || generateMemberColor(member.name, index),
   }));
 
-  const done = tasks.filter((t) => t.status === "done").length;
-  const inProgress = tasks.filter((t) => t.status === "in_progress").length;
+  const activeFilters: DashboardFilters = filters ?? {
+    myTasks: false,
+    overdue: false,
+    highPriority: false,
+  };
+  const hasActiveFilters = Object.values(activeFilters).some(Boolean);
 
-<<<<<<< HEAD
+  const tasks = allTasks.filter((task) => {
+    if (activeFilters.myTasks && task.assignee_id !== userId) return false;
+    if (activeFilters.overdue && !isOverdue(task)) return false;
+    if (activeFilters.highPriority && !["high", "urgent"].includes(task.priority)) return false;
+    return true;
+  });
+
+  const done = tasks.filter((task) => task.status === "done").length;
+  const inProgress = tasks.filter((task) => task.status === "in_progress").length;
   const stats = [
     { label: "Projects", value: projects.length, icon: FolderKanban, color: "text-primary" },
-    { label: "Open tasks", value: tasks.length - done, icon: Clock, color: "text-warning" },
+    { label: hasActiveFilters ? "Matching tasks" : "Open tasks", value: tasks.length - done, icon: Clock, color: "text-warning" },
     { label: "In progress", value: inProgress, icon: FolderKanban, color: "text-info" },
     { label: "Completed", value: done, icon: CheckCircle2, color: "text-success" },
   ];
-=======
-  // Calculate stats
-  const inProgress = tasks.filter((t) => t.status === 'in_progress').length;
-  const done = tasks.filter((t) => t.status === 'done').length;
-  const openTasks = tasks.length - done;
-  const totalProjects = projects.length;
->>>>>>> fe93335 (feat: complete useProjectsOverview hook for Task 1)
 
-  const stats = [
-    { label: 'Projects', value: totalProjects, icon: FolderKanban, color: 'text-primary' },
-    { label: 'Open tasks', value: openTasks, icon: Clock, color: 'text-warning' },
-    { label: 'In progress', value: inProgress, icon: FolderKanban, color: 'text-info' },
-    { label: 'Completed', value: done, icon: CheckCircle2, color: 'text-success' },
-  ];
-
-  function generateMemberColor(name: string, fallbackIndex: number) {
-    const colors = ['#ff5a4e', '#f59e0b', '#10b981', '#6366f1', '#ec4899', '#0ea5e9'];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-  }
+  const refetch = async () => {
+    await Promise.all([refetchProjects(), refetchTasks(), refetchMembers()]);
+  };
 
   return {
     projects,
     tasks,
-<<<<<<< HEAD
+    allTasks,
     members,
     stats,
-    isLoading: projectsLoading || tasksLoading || membersLoading,
-    error: projectsError || tasksError || membersError,
-  };
-}
-=======
-    members: membersWithColors,
+    hasActiveFilters,
     generateMemberColor,
-    stats,
-    isLoading: isProjectsLoading || isTasksLoading || isMembersLoading,
-    isProjectsLoading,
-    isTasksLoading,
-    isMembersLoading,
+    isLoading: projectsLoading || tasksLoading || membersLoading,
+    isProjectsLoading: projectsLoading,
+    isTasksLoading: tasksLoading,
+    isMembersLoading: membersLoading,
+    error: projectsError || tasksError || membersError,
     projectsError,
     tasksError,
     membersError,
+    refetch,
   };
-<<<<<<< HEAD
 }
-
-function generateMemberColor(name: string, fallbackIndex: number) {
-  const colors = ['#ff5a4e', '#f59e0b', '#10b981', '#6366f1', '#ec4899', '#0ea5e9'];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
-}
->>>>>>> fe93335 (feat: complete useProjectsOverview hook for Task 1)
-=======
-}
->>>>>>> c114262 (api fixed)

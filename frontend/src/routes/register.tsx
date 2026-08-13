@@ -13,9 +13,9 @@ export const Route = createFileRoute("/register")({
   head: () => ({
     meta: [
       { title: "Create your workspace — Orbit" },
-      { name: "description", content: "Spin up a new Orbit workspace in seconds." },
+      { name: "description", content: "Create a clear shared workspace for your team in Orbit." },
       { property: "og:title", content: "Create your workspace — Orbit" },
-      { property: "og:description", content: "Spin up a new Orbit workspace in seconds." },
+      { property: "og:description", content: "Create a clear shared workspace for your team in Orbit." },
     ],
   }),
   component: RegisterPage,
@@ -47,25 +47,26 @@ function RegisterPage() {
   }
 
   return (
-    <AuthShell title="Create your workspace" subtitle="It takes about ten seconds. Really.">
-      <form onSubmit={submit} className="space-y-4" data-testid="register-form">
+    <AuthShell compact title="Create your workspace" subtitle="Set up a clear shared record for your team and its work.">
+      <form onSubmit={submit} className="space-y-4 lg:space-y-2" data-testid="register-form">
         {error && (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          <div className="border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
             {error}
           </div>
         )}
-        <div className="space-y-1.5">
-          <Label htmlFor="name">Full name</Label>
+        <div className="auth-field">
+          <Label className="auth-field-label" htmlFor="name">Full name</Label>
           <Input
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ada Lovelace"
             required
+            className="!h-7 !border-0 !bg-transparent !px-0 !py-0 !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
           />
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="email">Work email</Label>
+        <div className="auth-field">
+          <Label className="auth-field-label" htmlFor="email">Work email</Label>
           <Input
             id="email"
             type="email"
@@ -73,10 +74,11 @@ function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="ada@company.com"
             required
+            className="!h-7 !border-0 !bg-transparent !px-0 !py-0 !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
           />
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="pw">Password</Label>
+        <div className="auth-field">
+          <Label className="auth-field-label" htmlFor="pw">Password</Label>
           <Input
             id="pw"
             type="password"
@@ -84,12 +86,13 @@ function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={4}
+            className="!h-7 !border-0 !bg-transparent !px-0 !py-0 !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
           />
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="role">Role</Label>
+        <div className="auth-field">
+          <Label className="auth-field-label" htmlFor="role">Role</Label>
           <Select value={role} onValueChange={(v) => setRole(v as "user" | "admin")}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="!h-7 w-full !border-0 !bg-transparent !px-0 !py-0 !text-base !shadow-none focus:!ring-0">
               <SelectValue placeholder="Select role" />
             </SelectTrigger>
             <SelectContent>
@@ -98,10 +101,10 @@ function RegisterPage() {
             </SelectContent>
           </Select>
         </div>
-        <Button type="submit" size="lg" className="w-full rounded-full" disabled={loading}>
+        <Button type="submit" size="lg" className="ledger-action w-full" disabled={loading}>
           {loading ? "Creating..." : <><span>Create workspace</span><ArrowRight className="ml-2 h-4 w-4" /></>}
         </Button>
-        <p className="pt-2 text-center text-sm text-muted-foreground">
+        <p className="pt-2 text-center text-sm text-muted-foreground lg:pt-1">
           Already have one?{" "}
           <Link to="/login" className="font-semibold text-primary hover:underline">Sign in</Link>
         </p>

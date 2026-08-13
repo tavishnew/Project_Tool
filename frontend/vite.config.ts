@@ -17,6 +17,7 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    allowedHosts: ['.manus.computer'],
     proxy: { '/api': 'http://localhost:3001' },
   },
 });
