@@ -60,7 +60,7 @@ function RegisterPage() {
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Ada Lovelace"
+            placeholder="Username"
             required
             className="!h-7 !border-0 !bg-transparent !px-0 !py-0 !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
           />
@@ -72,7 +72,7 @@ function RegisterPage() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="ada@company.com"
+            placeholder="name@example.com"
             required
             className="!h-7 !border-0 !bg-transparent !px-0 !py-0 !shadow-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
           />
